@@ -27,6 +27,7 @@ const roots = [
   'tsconfig.json',
   'vitest.config.ts',
   '.gitignore',
+  '.gitattributes',
   '.dockerignore',
   '.prettierignore',
   '.prettierrc.json',
