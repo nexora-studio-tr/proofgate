@@ -2,7 +2,7 @@
 
 **Değişiklik ve kanıtı.** Claude Code, Codex veya editörünüzle yazdığınız kod için eski/yeni test karşılaştırması ve kontrollü hata denemeleri.
 
-[English](README.md) · [Kurulum](docs/SETUP.tr.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](SECURITY.md)
+[Canlı demo](https://proofgate-demo.onrender.com/) · [English](README.md) · [Kurulum](docs/SETUP.tr.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](SECURITY.md)
 
 Ajan bir yetki kontrolünü düzeltip test ekleyebilir; eklenen test bozuk kodda da geçiyor olabilir. ProofGate aynı testi iki sürümde çalıştırarak bunu görünür kılar. Ardından StrykerJS ile küçük kontrollü hatalar oluşturup testlerin bunları yakalayıp yakalamadığını inceler. Rapor tam kaynak, bağımlılık, politika ve çalışma imajı kimliğine bağlıdır.
 
@@ -24,6 +24,8 @@ Temel doğrulama **model API anahtarı, ücretli servis veya bulut hesabı istem
 Node.js 24 serisinde **24.15 veya üzeri**, npm, Git ve çalışan bir Docker Linux motoru gerekir. Windows'ta Docker Desktop Linux-container modunu kullanın.
 
 ```sh
+git clone https://github.com/shadow2028-blip/proofgate.git
+cd proofgate
 npm run setup
 npm start
 ```
@@ -50,6 +52,8 @@ node scripts/connect.mjs claude --data .proofgate
 Komut yerel eklenti klasörünü gösterir. Paket talimatları ve MCP bağlantısını içerir; hesabınıza izin vermez veya istemci ayarlarınızı kendiliğinden değiştirmez. [Kurulum açıklaması](plugins/README.md).
 
 ## Demo ve kontroller
+
+[Salt okunur canlı demoyu açın](https://proofgate-demo.onrender.com/). Ücretsiz servis boşta uyuyabilir; ilk açılış yaklaşık bir dakika sürebilir.
 
 ```sh
 node dist/apps/cli/src/index.js demo --port 4328 --data .proofgate-demo

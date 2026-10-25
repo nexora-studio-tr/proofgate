@@ -25,6 +25,8 @@ Observed local gates (Windows, Node 24.15.0, Linux containers through Docker Des
 
 CI defines Windows/Linux checks plus Linux execution/browser gates. Check the actual repository workflow result for the published commit before treating those remote jobs as passed. Source-archive installation and demo deployment have separate validation scripts and records; preparation alone is not a successful deployment.
 
+Publication verified on 2026-10-25: all four jobs in [CI run 40169454253](https://github.com/shadow2028-blip/proofgate/actions/runs/40169454253) passed for commit `05fa5a6cd3d56d126b47c3dc8f35ca1c0cc33dec`, including actual Linux container execution and Windows checks. The [public Free demo](https://proofgate-demo.onrender.com/) passed thirteen HTTPS, asset, evidence-export and read-only API checks. These are recorded observations for that version; later commits need their own CI results.
+
 Not claimed: independent security audit, hostile-code isolation, complete natural-language requirement coverage, external user adoption, SMTP delivery, SSO/MFA, arbitrary frameworks or official plugin-directory approval. Local generated plugin bundles do not install themselves into a host client. Mutation waivers are not implemented; surviving/uncovered mutations remain failures in this alpha.
 
 Türkçe: Çalışan alpha kapsamı ve yerelde ölçülen sonuçlar yukarıdadır. Yayındaki commit'in CI kaydı ayrıca kontrol edilmelidir. Ücretli servis, ödeme sistemi veya ticari bot kaynağı dahil edilmedi.

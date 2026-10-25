@@ -2,7 +2,7 @@
 
 **A change. Its evidence.** Before/after tests and bounded mutation evidence for changes written with Claude Code, Codex or your editor.
 
-[Türkçe](README.tr.md) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
+[Live demo](https://proofgate-demo.onrender.com/) · [Türkçe](README.tr.md) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
 An agent can fix a permission check and add a test that also passes on the broken code. ProofGate runs the same selected test on both implementations, then uses StrykerJS to measure which controlled edits the tests detect. Every observation is bound to exact source, dependency, policy and image hashes.
 
@@ -24,6 +24,8 @@ Core verification needs **no model API key, paid service or cloud account**. Thi
 Use Node.js **24.15+ within the Node 24 line**, npm, Git and a running Docker Linux engine. Windows uses Docker Desktop in Linux-container mode.
 
 ```sh
+git clone https://github.com/shadow2028-blip/proofgate.git
+cd proofgate
 npm run setup
 npm start
 ```
@@ -52,6 +54,8 @@ node scripts/connect.mjs claude --data .proofgate
 The printed folder contains the shared skill, project IDs and an absolute-path MCP configuration. The generator does not edit client settings or grant permissions. Legacy and modern MCP handshakes are tested. [Plugin installation](plugins/README.md).
 
 ## Demo
+
+[Open the public read-only demo](https://proofgate-demo.onrender.com/). The Free instance can sleep when idle; the first request may take about a minute.
 
 ```sh
 node dist/apps/cli/src/index.js demo --port 4328 --data .proofgate-demo
