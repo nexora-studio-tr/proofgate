@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: proofgate-demo
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile.web
+    healthCheckPath: /healthz
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LISTEN_HOST
+        value: 0.0.0.0

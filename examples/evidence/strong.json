@@ -1,0 +1,379 @@
+{
+  "schemaVersion": 1,
+  "toolVersion": "0.1.0-alpha.1",
+  "runId": "5b31abc5-ce9a-4a98-afb2-640ed00b0fc0",
+  "projectId": "b5e017fb-547b-4ebd-a8a6-6cf4e9970aea",
+  "startedAt": "2026-10-25T03:05:23.902Z",
+  "finishedAt": "2026-10-25T03:05:40.877Z",
+  "baseHash": "10c1941467ee47e366957c1330d304a26b161d7b386a311a1ce93ba0ddf7b55f",
+  "candidateHash": "f4fdad9061801d3b8346dacd7752076acc73a751368e5a1a2cff493ba0bc5ca6",
+  "policyHash": "3d498c0f3456a943a8b3f5fae43a14eee460a1506f566630934209ce99a3c320",
+  "lockHash": "4401a60d6dcf7e290ee9000bb46b0703c4795e0f583362f6564c76b69ceafb1f",
+  "image": "sha256:bb6ac6f0f7c7bb251cec027f116c98655c3976bc7fcfdbb7320c42dbf3d0d2a0",
+  "scope": [
+    "src/access.ts",
+    "tests/access.test.ts"
+  ],
+  "state": "completed",
+  "verdict": "pass",
+  "findings": [],
+  "trials": [
+    {
+      "variant": "B",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1902
+    },
+    {
+      "variant": "C",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1372
+    },
+    {
+      "variant": "H",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1334
+    },
+    {
+      "variant": "C",
+      "index": 2,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1319
+    },
+    {
+      "variant": "H",
+      "index": 2,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1490
+    },
+    {
+      "variant": "C",
+      "index": 3,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1363
+    },
+    {
+      "variant": "H",
+      "index": 3,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "allows owner",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects viewer",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "rejects member",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        },
+        {
+          "name": "allows admin",
+          "status": "passed",
+          "message": "",
+          "assertion": false
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 1362
+    }
+  ],
+  "mutations": [
+    {
+      "id": "0",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "BlockStatement",
+      "replacement": "{}",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "1",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "true",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "1"
+      ]
+    },
+    {
+      "id": "2",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "false",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "3",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "LogicalOperator",
+      "replacement": "role === 'owner' && role === 'admin'",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "4",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "false",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "5",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "EqualityOperator",
+      "replacement": "role !== 'owner'",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "6",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "StringLiteral",
+      "replacement": "\"\"",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "0"
+      ]
+    },
+    {
+      "id": "7",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "false",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "3"
+      ]
+    },
+    {
+      "id": "8",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "EqualityOperator",
+      "replacement": "role !== 'admin'",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "1"
+      ]
+    },
+    {
+      "id": "9",
+      "file": "src/access.ts",
+      "line": 1,
+      "mutator": "StringLiteral",
+      "replacement": "\"\"",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "3"
+      ]
+    }
+  ],
+  "mutationScope": {
+    "selected": 10,
+    "attempted": 10,
+    "omitted": 0,
+    "complete": true,
+    "locations": [
+      "src/access.ts:1-1"
+    ]
+  },
+  "elapsedMs": 16975,
+  "budget": {
+    "stageMs": 120000,
+    "totalMs": 600000,
+    "mutants": 25
+  },
+  "simulated": false
+}

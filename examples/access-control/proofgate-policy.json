@@ -1,0 +1,1 @@
+{"schemaVersion":1,"testFiles":["tests/access.test.ts"],"productionFiles":["src/access.ts"],"requiredTests":["allows owner","rejects viewer","rejects member","allows admin"],"regressionTest":"rejects member","expectedFailure":"expected true to be false","budget":{"stageMs":120000,"totalMs":600000,"mutants":25}}

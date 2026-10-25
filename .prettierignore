@@ -1,0 +1,7 @@
+node_modules
+dist
+artifacts
+.proofgate*
+package-lock.json
+**/package-lock.json
+examples/evidence

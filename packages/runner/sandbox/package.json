@@ -1,0 +1,15 @@
+{
+  "name": "proofgate-sandbox",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "type": "module",
+  "overrides": {
+    "qs": "6.16.1"
+  },
+  "dependencies": {
+    "vitest": "5.0.5",
+    "@stryker-mutator/core": "10.1.1",
+    "@stryker-mutator/vitest-runner": "10.1.1",
+    "@stryker-mutator/instrumenter": "10.1.1"
+  }
+}

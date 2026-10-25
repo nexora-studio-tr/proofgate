@@ -1,0 +1,17 @@
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d AS build
+WORKDIR /app
+COPY . .
+RUN npm ci --ignore-scripts --no-audit --no-fund && npm run build
+FROM node:24.15.0-bookworm-slim@sha256:4e6b70dd6cbfc88c8157ba19aa3d9f9cce6ba4703576d55459e45efcbc9c5f5d
+WORKDIR /app
+COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/apps ./apps
+COPY --from=build /app/packages ./packages
+RUN npm ci --omit=dev --ignore-scripts --no-audit --no-fund && mkdir /app/data && chown node:node /app/data
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/examples ./examples
+USER node
+ENV NODE_ENV=production LISTEN_HOST=0.0.0.0 PROOFGATE_DATA_DIR=/app/data PORT=10000
+EXPOSE 10000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=15s CMD ["node","--input-type=module","-e","const r=await fetch('http://127.0.0.1:'+process.env.PORT+'/healthz',{headers:{host:new URL(process.env.PUBLIC_URL??process.env.RENDER_EXTERNAL_URL??'http://127.0.0.1:10000').host}});process.exit(r.ok?0:1)"]
+CMD ["node","dist/apps/cli/src/index.js","demo"]

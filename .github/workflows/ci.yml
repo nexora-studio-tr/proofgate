@@ -1,0 +1,91 @@
+name: CI
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24.15.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run format:check
+      - run: npm run release:check
+      - run: npm audit --audit-level=moderate
+  execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24.15.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm run build
+      - run: docker build --tag proofgate-runner:0.1.0 packages/runner/sandbox
+      - run: npm run test:docker -- --all
+      - run: npm run test:isolation
+      - run: npm run test:integration
+      - run: docker build --file Dockerfile.web --tag proofgate-web:0.1.0 .
+      - run: npm run test:deployment
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: always()
+        with:
+          name: execution-evidence
+          path: |
+            artifacts/docker-validation/*.json
+            artifacts/isolation-validation/report.json
+            artifacts/integration-validation/report.json
+            artifacts/mcp-validation/report.json
+            artifacts/deployment-validation/report.json
+          retention-days: 7
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 24.15.0
+          cache: npm
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser -- --start
+      - run: npm run test:team-browser
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        if: always()
+        with:
+          name: browser-evidence
+          path: |
+            artifacts/browser-validation/*.png
+            artifacts/browser-validation/report.json
+            artifacts/team-browser/team-en.png
+            artifacts/team-browser/report.json
+          retention-days: 7
