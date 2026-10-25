@@ -1,6 +1,6 @@
 # Demo deployment / Demo yayını
 
-Published demo: [proofgate-demo.onrender.com](https://proofgate-demo.onrender.com/). Source: [shadow2028-blip/proofgate](https://github.com/shadow2028-blip/proofgate). The public deployment uses the Free plan and only the bundled reference data.
+Published demo: [proofgate-demo.onrender.com](https://proofgate-demo.onrender.com/). Source: [nexora-studio-tr/proofgate](https://github.com/nexora-studio-tr/proofgate). The public deployment uses the Free plan and only the bundled reference data.
 
 `Dockerfile.web` runs **only the read-only synthetic demo**. It does not start a supervisor, accept uploaded source or expose account creation. Do not add a Docker socket, private source mount or production credentials to this image. For real project/team verification use [self-hosted setup](SETUP.md).
 

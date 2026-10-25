@@ -24,7 +24,7 @@ Core verification needs **no model API key, paid service or cloud account**. Thi
 Use Node.js **24.15+ within the Node 24 line**, npm, Git and a running Docker Linux engine. Windows uses Docker Desktop in Linux-container mode.
 
 ```sh
-git clone https://github.com/shadow2028-blip/proofgate.git
+git clone https://github.com/nexora-studio-tr/proofgate.git
 cd proofgate
 npm run setup
 npm start

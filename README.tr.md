@@ -24,7 +24,7 @@ Temel doğrulama **model API anahtarı, ücretli servis veya bulut hesabı istem
 Node.js 24 serisinde **24.15 veya üzeri**, npm, Git ve çalışan bir Docker Linux motoru gerekir. Windows'ta Docker Desktop Linux-container modunu kullanın.
 
 ```sh
-git clone https://github.com/shadow2028-blip/proofgate.git
+git clone https://github.com/nexora-studio-tr/proofgate.git
 cd proofgate
 npm run setup
 npm start
