@@ -1,6 +1,7 @@
 import { policySchema } from '../../../packages/contracts/src/index.js';
 import { changedFiles, policyDigest, digest } from '../../../packages/core/src/index.js';
 import { captureBase, captureWorking } from '../../../packages/snapshots/src/index.js';
+import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { Store, type Identity, type Plan } from '../../../packages/storage/src/index.js';
 export async function planVerification(
   store: Store,
@@ -17,6 +18,8 @@ export async function planVerification(
   const policy = policySchema.parse(JSON.parse(project.policy));
   const base = await captureBase(project.root, baseRef);
   const head = await captureWorking(project.root, include);
+  const impact = workspaceImpact(base, head);
+  if (impact.kind !== 'single-package') throw new Error('WORKSPACE_EXECUTION_UNSUPPORTED');
   const baseImage = store.meta('runner_image');
   if (!baseImage) throw new Error('RUNNER_IMAGE_MISSING');
   const prepared = store.get<{ image: string }>(
@@ -42,6 +45,7 @@ export async function planVerification(
     policyHash: policyDigest(policy),
     image: prepared.image,
     changedFiles: changedFiles(base, head),
+    workspaceImpact: impact,
     budget: policy.budget,
     expiresAt: new Date(Date.now() + 1800000).toISOString(),
   };

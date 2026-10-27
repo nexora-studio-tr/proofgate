@@ -59,9 +59,10 @@ for (const p of [...roots, ...directories]) await collect(p);
 files.sort();
 const manifest = [];
 for (const p of files) {
-  const bytes = await readFile(path.join(root, p));
+  let bytes = await readFile(path.join(root, p));
   if (!/\.(png|jpe?g|gif)$/.test(p)) {
-    const text = bytes.toString('utf8');
+    const text = bytes.toString('utf8').replaceAll('\r\n', '\n');
+    bytes = Buffer.from(text, 'utf8');
     if (text.includes('\uFFFD')) throw new Error('Non-UTF8 source: ' + p);
     if (
       /(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|sk-(?:proj-)?[A-Za-z0-9_-]{30,}|-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----|[A-Za-z]:[\\/]Users[\\/])/.test(
@@ -116,7 +117,13 @@ try {
     const dest = path.join(directory, prefix, p);
     await mkdir(path.dirname(dest), { recursive: true });
     await cp(path.join(root, p), dest);
+    if (!/\.(png|jpe?g|gif)$/.test(p))
+      await writeFile(dest, (await readFile(dest, 'utf8')).replaceAll('\r\n', '\n'));
   }
+  await writeFile(
+    path.join(directory, prefix, 'SOURCE-MANIFEST.json'),
+    JSON.stringify({ version: pkg.version, sourceHash, files: manifest }, null, 2) + '\n',
+  );
   const archive = path.join(output, prefix + '.tgz');
   const result = spawnSync('tar', ['-czf', archive, '-C', directory, prefix], {
     stdio: 'inherit',

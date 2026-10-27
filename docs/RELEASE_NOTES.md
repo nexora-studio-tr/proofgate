@@ -1,11 +1,13 @@
-# ProofGate 0.1.0-alpha.1
+# ProofGate 0.1.0-alpha.2
 
-Initial source release of the scoped local verifier and optional self-hosted team workspace.
+Read-only workspace impact preflight for a captured code change. The CLI, existing MCP inspection tool and bilingual web dialog explain direct package owners and transitive dependants using both base and candidate graphs. Deleted edges/packages remain represented; cycles and incomplete manifests are explicit.
 
-Compare the same regression test on original/candidate bytes, then inspect bounded Stryker mutation evidence for the changed source span. Use the CLI, local TR/EN review UI or generated Claude Code/Codex MCP packages. Missing or unstable observations remain inconclusive.
+```sh
+node dist/apps/cli/src/index.js inspect /absolute/git-root --base HEAD
+```
 
-Includes source/data boundaries, resource limits, real synthetic examples, meaningful negative tests, team/session/role management, one-use invitations/recovery, project tokens, a read-only demo container and a Free Render Blueprint. Core operation needs no model API key or paid service.
+Inspection executes no target code and requires no Docker or model key. It creates no verification jobs. Monorepo execution is explicitly rejected; the npm/Vitest runner remains single-package. Results bind to source hashes and do not prove imports, test coverage or correctness. See [workspace scope](WORKSPACE-IMPACT.md) and [setup](SETUP.md).
 
-Install with `npm run setup` on supported Node 24 with Git and Docker Linux containers. Review [setup](SETUP.md), [security](../SECURITY.md) and [validation status](STATUS.md). This alpha does not certify correctness/security, support hostile multi-tenant code, or include browser/E2E, private registry, monorepo, SMTP or SSO/MFA adapters.
+The source archive includes a normalized SHA-256 file manifest. Clean-source checks verify every file, install fresh dependencies, build and exercise the CLI. Hosted checks retain the existing container isolation/execution and demo/team browser gates, plus the new preflight check. Exact results accompany the published release. MIT license.
 
-Türkçe: İlk açık kaynak alpha; kapsamı belirli eski/yeni doğrulama, mutasyon kanıtı, MCP/CLI/arayüz, ekip yönetimi ve güvenli örnek demo içerir. Kurulum ve sınırlar [Türkçe belgede](SETUP.tr.md) açıklanır.
+Türkçe: Değişen paketi ve dolaylı bağımlıları, neden zinciriyle gösteren salt okunur ön inceleme eklendi. Silinen ilişkiler, döngüler ve belirsizlikler görünür. Proje kodu çalıştırılmaz; monorepo doğrulaması desteklenmez. Kaynak paketi dosya bazında SHA-256 manifesti ve temiz kurulum kontrolü içerir. [Türkçe kurulum](SETUP.tr.md).
