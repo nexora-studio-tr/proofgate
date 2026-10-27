@@ -2,6 +2,8 @@
 
 **Değişiklik ve kanıtı.** Claude Code, Codex veya editörünüzle yazdığınız kod için eski/yeni test karşılaştırması ve kontrollü hata denemeleri.
 
+**[Alpha.2](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.2)**, CLI/MCP ve iki dilli panelden [paket etki ön incelemesi](docs/WORKSPACE-IMPACT.md) ekler. Değişen paketleri, dolaylı bağımlıları ve belirsizlikleri gör. Doğrulama çalıştırması hâlâ tek npm paketini destekler.
+
 [Canlı demo](https://proofgate-demo.onrender.com/) · [English](README.md) · [Kurulum](docs/SETUP.tr.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](SECURITY.md)
 
 Ajan bir yetki kontrolünü düzeltip test ekleyebilir; eklenen test bozuk kodda da geçiyor olabilir. ProofGate aynı testi iki sürümde çalıştırarak bunu görünür kılar. Ardından StrykerJS ile küçük kontrollü hatalar oluşturup testlerin bunları yakalayıp yakalamadığını inceler. Rapor tam kaynak, bağımlılık, politika ve çalışma imajı kimliğine bağlıdır.

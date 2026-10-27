@@ -1,6 +1,16 @@
 # Implementation and validation status
 
-Version: **0.1.0-alpha.1**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+Version: **0.1.0-alpha.2**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+
+## Alpha.2 workspace preflight — 2026-10-27
+
+Added read-only, hash-bound package impact through the CLI, registered-project API, existing six-tool MCP and TR/EN UI. Before/after edges, deleted packages, transitive reasons, cycles and conservative diagnostics are covered. Real workspace execution remains unsupported and plans are rejected before enqueueing. See [scope and limits](WORKSPACE-IMPACT.md).
+
+Local Windows validation: strict typecheck/build/format, 65 TypeScript tests and six real CLI/MCP/browser checks using a synthetic Git workspace. These checks execute no target scripts, create no plans/jobs and make no paid calls. The exact published release has separate hosted CI and fresh-source installation evidence.
+
+Türkçe: Etki ön incelemesi eklendi; bu, monorepo testlerinin çalıştırıldığı veya test kapsamının kanıtlandığı anlamına gelmez. Güncel paketin doğrulama ayrıntıları sürüm dosyalarında tutulur.
+
+## Initial alpha.1 observations
 
 Implemented: immutable Git/working snapshots, registered policies, before/after runner, bounded Stryker integration, typed evidence, weakening findings, local API/UI/CLI, shared supervisor queue, six-tool MCP, local plugin package generator, TR/EN UI, team identities/roles/invitations/recovery/project tokens and ownership transfer.
 

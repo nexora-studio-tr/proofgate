@@ -4,6 +4,7 @@ import { Dialog, DropdownMenu, Tabs } from 'radix-ui';
 import { setNonce } from 'get-nonce';
 import { TeamPanel, type TeamView } from './team.js';
 import { SelectControl } from './controls.js';
+import { WorkspacePreflight } from './workspace.js';
 import type { Evidence } from '../../../packages/contracts/src/index.js';
 import './style.css';
 setNonce(document.querySelector('meta[name="csp-nonce"]')?.getAttribute('content') ?? '');
@@ -85,6 +86,8 @@ const copy = {
     audit: 'Recent activity',
     mode: 'Recorded scope only',
     error: 'Request failed',
+    workspaceBlocked:
+      'Workspace inspection is available; verification execution supports one npm package.',
     waiting: 'Waiting for reference evidence',
     hash: 'Candidate snapshot',
   },
@@ -155,6 +158,8 @@ const copy = {
     audit: 'Son işlemler',
     mode: 'Yalnızca kayıtlı kapsam',
     error: 'İstek başarısız',
+    workspaceBlocked:
+      'Paket ön incelemesi kullanılabilir; doğrulama çalıştırması tek npm paketini destekler.',
     waiting: 'Örnek kanıt bekleniyor',
     hash: 'Aday kaynak görüntüsü',
   },
@@ -203,10 +208,15 @@ function App() {
         ...(data ? { body: JSON.stringify(data) } : {}),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error ?? t.error);
+      if (!response.ok)
+        throw new Error(
+          result.error === 'WORKSPACE_EXECUTION_UNSUPPORTED'
+            ? t.workspaceBlocked
+            : (result.error ?? t.error),
+        );
       return result;
     },
-    [session?.identity?.csrf, t.error],
+    [session?.identity?.csrf, t.error, t.workspaceBlocked],
   );
   const refresh = useCallback(async () => {
     const s = await api('/api/session');
@@ -790,6 +800,15 @@ function App() {
                   </ul>
                 </div>
               )}
+              <WorkspacePreflight
+                key={`${dialog}:${project}:${base}`}
+                language={lang}
+                disabled={busy || !project}
+                inspect={async () =>
+                  (await api('/api/inspect', { projectId: project, baseRef: base, include: [] }))
+                    .workspaceImpact
+                }
+              />
               {error && (
                 <p className="error" role="alert">
                   {error}

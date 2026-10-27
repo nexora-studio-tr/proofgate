@@ -2,6 +2,8 @@
 
 **A change. Its evidence.** Before/after tests and bounded mutation evidence for changes written with Claude Code, Codex or your editor.
 
+**[Alpha.2](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.2)** adds [workspace impact preflight](docs/WORKSPACE-IMPACT.md) through the CLI, MCP and TR/EN UI. Review direct changes, transitive dependants and uncertainty before execution. The verifier still executes one npm package at a time.
+
 [Live demo](https://proofgate-demo.onrender.com/) · [Türkçe](README.tr.md) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
 An agent can fix a permission check and add a test that also passes on the broken code. ProofGate runs the same selected test on both implementations, then uses StrykerJS to measure which controlled edits the tests detect. Every observation is bound to exact source, dependency, policy and image hashes.
