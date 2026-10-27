@@ -1431,3 +1431,30 @@ footer {
     scroll-behavior: auto !important;
   }
 }
+.workspace-preflight {
+  padding-block: 1rem;
+  border-block: 1px solid var(--line, #ddd8ce);
+  overflow-wrap: anywhere;
+}
+.workspace-preflight p {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-block: 0.5rem;
+}
+.workspace-preflight h3 {
+  font: 500 1.1rem var(--serif);
+  margin-block: 0.9rem 0.4rem;
+}
+.workspace-preflight ul {
+  padding-inline-start: 1.2rem;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+.workspace-preflight li {
+  padding-block: 0.4rem;
+}
+.workspace-preflight li span,
+.workspace-preflight li code {
+  display: block;
+  font-size: 0.8rem;
+}

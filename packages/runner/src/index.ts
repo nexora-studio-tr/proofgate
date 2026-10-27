@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, rm, chmod } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import type { Evidence, Mutation, Policy, Snapshot, Trial } from '../../contracts/src/index.js';
@@ -53,7 +53,14 @@ async function container(
     name = `proofgate-${randomUUID()}`;
   const inputDir = path.join(dir, name);
   await mkdir(inputDir, { recursive: true });
-  await writeFile(path.join(inputDir, 'input.json'), JSON.stringify(input), { mode: 0o600 });
+  const inputFile = path.join(inputDir, 'input.json');
+  await writeFile(inputFile, JSON.stringify(input), { mode: 0o600 });
+  if (process.platform !== 'win32') {
+    // The read-only mount must be readable by container UID 1000 even when the host UID differs.
+    // Its private outer run directory still prevents access by other host users.
+    await chmod(inputDir, 0o755);
+    await chmod(inputFile, 0o444);
+  }
   if (inputDir.includes(',')) throw new Error('Comma in data directory unsupported');
   try {
     const result = await docker(
@@ -129,7 +136,8 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
   if (!/^sha256:[a-f0-9]{64}$/.test(options.image))
     throw new Error('Only an existing immutable Docker image ID is permitted');
   const work = path.join(path.resolve(options.dataDir), 'work', runId);
-  await mkdir(work, { recursive: true });
+  await mkdir(work, { recursive: true, mode: 0o700 });
+  if (process.platform !== 'win32') await chmod(work, 0o700);
   const e: Evidence = {
     schemaVersion: 1,
     toolVersion: VERSION,

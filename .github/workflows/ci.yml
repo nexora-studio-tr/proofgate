@@ -32,6 +32,8 @@ jobs:
       - run: npm run build
       - run: npm run format:check
       - run: npm run release:check
+      - run: npm run release:pack
+      - run: npm run test:release
       - run: npm audit --audit-level=moderate
   execution:
     runs-on: ubuntu-latest
@@ -52,7 +54,7 @@ jobs:
       - run: npm run test:integration
       - run: docker build --file Dockerfile.web --tag proofgate-web:0.1.0 .
       - run: npm run test:deployment
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: execution-evidence
@@ -79,7 +81,8 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:browser -- --start
       - run: npm run test:team-browser
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+      - run: npm run test:workspace
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: browser-evidence
@@ -88,4 +91,6 @@ jobs:
             artifacts/browser-validation/report.json
             artifacts/team-browser/team-en.png
             artifacts/team-browser/report.json
+            artifacts/workspace-validation/*.png
+            artifacts/workspace-validation/report.json
           retention-days: 7
