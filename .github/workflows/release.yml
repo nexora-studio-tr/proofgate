@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
@@ -22,6 +22,11 @@ jobs:
       - run: npm ci --ignore-scripts --no-fund
       - run: node --input-type=module -e "import fs from 'node:fs'; if (process.env.GITHUB_REF_NAME !== 'v'+JSON.parse(fs.readFileSync('package.json')).version) process.exit(1)"
       - run: npm run release:pack
-      - run: gh release create "$GITHUB_REF_NAME" artifacts/release/*.tgz artifacts/release/*.sha256 --verify-tag --prerelease --title "ProofGate $GITHUB_REF_NAME" --notes-file docs/RELEASE_NOTES.md
+      - run: |
+          if gh release view "$GITHUB_REF_NAME" --json tagName >/dev/null 2>&1; then
+            echo "Release already exists; preserving its uploaded assets and notes."
+          else
+            gh release create "$GITHUB_REF_NAME" artifacts/release/*.tgz artifacts/release/*.sha256 --verify-tag --prerelease --title "ProofGate $GITHUB_REF_NAME" --notes-file docs/RELEASE_NOTES.md
+          fi
         env:
           GH_TOKEN: ${{ github.token }}

@@ -26,6 +26,7 @@ import {
 import { planVerification, startVerification } from './service.js';
 import { captureBase, captureWorking } from '../../../packages/snapshots/src/index.js';
 import { changedFiles, policyDigest } from '../../../packages/core/src/index.js';
+import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { policySchema } from '../../../packages/contracts/src/index.js';
 import { examplePair } from '../../../packages/core/src/examples.js';
 
@@ -275,6 +276,7 @@ export async function createServer(options: Options) {
       baseHash: base.hash,
       candidateHash: head.hash,
       changedFiles: changedFiles(base, head),
+      workspaceImpact: workspaceImpact(base, head),
       policyHash: policyDigest(policySchema.parse(JSON.parse(p.policy))),
     };
   });

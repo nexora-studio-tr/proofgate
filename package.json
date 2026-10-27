@@ -1,6 +1,6 @@
 {
   "name": "proofgate",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "private": true,
   "type": "module",
   "description": "Before/after verification and mutation evidence for agent-authored changes",
@@ -33,7 +33,8 @@
     "test:integration": "node scripts/validate-integration.mjs",
     "release:check": "node scripts/release.mjs --check",
     "release:pack": "node scripts/release.mjs",
-    "test:release": "node scripts/validate-release.mjs"
+    "test:release": "node scripts/validate-release.mjs",
+    "test:workspace": "node scripts/validate-workspace.mjs"
   },
   "dependencies": {
     "@fastify/cookie": "11.1.3",

@@ -1,3 +1,4 @@
+import { VERSION } from '../dist/packages/contracts/src/index.js';
 import { randomUUID } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
@@ -48,7 +49,7 @@ try {
     await new Promise((r) => setTimeout(r, 200));
   }
   assert.equal(health.mode, 'demo');
-  assert.equal(health.version, '0.1.0-alpha.1');
+  assert.equal(health.version, VERSION);
   checks.push('Actual production image startup and mode');
   const root = await fetch(origin);
   assert.equal(root.status, 200);

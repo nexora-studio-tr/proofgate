@@ -74,7 +74,7 @@ export async function startMcp(dataDir: string) {
         );
       register(
         'inspect_change',
-        'Inspect a registered project and exact change hashes. Does not start execution.',
+        'Inspect exact change hashes and manifest workspace impact for a registered project. Read-only preflight; monorepo execution is unsupported.',
         verifyInput,
         true,
         (a) => api('/api/inspect', a),
