@@ -186,7 +186,9 @@ function App() {
     return { bootstrap: p.get('bootstrap'), invite: p.get('invite'), recovery: p.get('recovery') };
   });
   const [linkMode, setLinkMode] = useState(true),
-    [change, setChange] = useState<{
+    [changeRecord, setChangeRecord] = useState<{
+      runId: string;
+      candidateHash: string;
       base: string;
       head: string;
       file: string;
@@ -244,11 +246,25 @@ function App() {
   const run = runs.find((r) => r.id === selected) ?? runs[0],
     e = run?.evidence,
     demo = session?.mode === 'demo';
+  const change =
+    changeRecord?.runId === run?.id && changeRecord?.candidateHash === e?.candidateHash
+      ? changeRecord
+      : null;
   useEffect(() => {
     if (!run?.id || !e) return;
-    void api(`/api/runs/${run.id}/change`)
-      .then(setChange)
-      .catch(() => setChange(null));
+    let active = true;
+    const runId = run.id,
+      candidateHash = e.candidateHash;
+    void api(`/api/runs/${runId}/change`)
+      .then((value) => {
+        if (active) setChangeRecord({ ...value, runId, candidateHash });
+      })
+      .catch(() => {
+        if (active) setChangeRecord(null);
+      });
+    return () => {
+      active = false;
+    };
   }, [run?.id, e, api]);
   useEffect(() => {
     if (!runs.some((r) => r.state === 'queued' || r.state === 'running')) return;

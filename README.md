@@ -2,7 +2,7 @@
 
 **A change. Its evidence.** Before/after tests and bounded mutation evidence for changes written with Claude Code, Codex or your editor.
 
-**[Alpha.3](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3)** adds [controlled npm workspace verification](docs/WORKSPACE-EXECUTION.md): one frozen plan for up to five packages, seven before/after trials and mutation evidence that identifies the consumer test which caught a shared-code defect.
+**[Alpha.3.1](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3.1)** adds [controlled npm workspace verification](docs/WORKSPACE-EXECUTION.md): one frozen plan for up to five packages, seven before/after trials and mutation evidence that identifies the consumer test which caught a shared-code defect.
 
 [Live demo](https://proofgate-demo.onrender.com/) · [Türkçe](README.tr.md) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 

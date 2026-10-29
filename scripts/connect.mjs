@@ -35,7 +35,7 @@ if (client === 'codex') {
       {
         $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
         name: 'proofgate',
-        version: '0.1.0-alpha.3',
+        version: '0.1.0-alpha.3.1',
         description: 'Before/after tests and bounded mutation evidence for registered code changes',
       },
       null,
@@ -60,7 +60,7 @@ if (client === 'codex') {
     JSON.stringify(
       {
         name: 'proofgate',
-        version: '0.1.0-alpha.3',
+        version: '0.1.0-alpha.3.1',
         description: 'Before/after tests and bounded mutation evidence for registered code changes',
       },
       null,

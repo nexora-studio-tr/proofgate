@@ -67,11 +67,76 @@ try {
   const records = await (await fetch(origin + '/api/runs')).json();
   const workspace = records.find((r) => r.evidence?.schemaVersion === 2);
   assert.ok(workspace, 'Recorded workspace evidence is missing');
+  const single = records.find((r) => r.evidence?.schemaVersion === 1);
+  await expect(page.locator('.diff-panel')).toContainText('canDelete');
+  let releaseWorkspace, startedWorkspace, fulfilledWorkspace;
+  const workspaceGate = new Promise((resolve) => {
+    releaseWorkspace = resolve;
+  });
+  const workspaceStarted = new Promise((resolve) => {
+    startedWorkspace = resolve;
+  });
+  const workspaceFulfilled = new Promise((resolve) => {
+    fulfilledWorkspace = resolve;
+  });
+  const workspaceRoute = '**/api/runs/' + workspace.id + '/change';
+  await page.route(workspaceRoute, async (route) => {
+    const response = await route.fetch();
+    startedWorkspace();
+    await workspaceGate;
+    await route.fulfill({ response });
+    fulfilledWorkspace();
+  });
   await page.getByRole('button', { name: /Geçmiş denemeler/ }).click();
   await page
     .locator('.history-row')
     .filter({ hasText: workspace.id.slice(0, 8) })
     .click();
+  await workspaceStarted;
+  await expect(page.locator('.diff-panel')).not.toContainText('canDelete');
+  await expect(page.locator('.diff-panel')).not.toContainText('canEdit');
+  releaseWorkspace();
+  await workspaceFulfilled;
+  await page.unroute(workspaceRoute);
+  await expect(page.locator('.diff-panel')).toContainText('canEdit');
+  let releaseSingle, startedSingle, fulfilledSingle;
+  const singleGate = new Promise((resolve) => {
+    releaseSingle = resolve;
+  });
+  const singleStarted = new Promise((resolve) => {
+    startedSingle = resolve;
+  });
+  const singleFulfilled = new Promise((resolve) => {
+    fulfilledSingle = resolve;
+  });
+  const singleRoute = '**/api/runs/' + single.id + '/change';
+  await page.route(singleRoute, async (route) => {
+    const response = await route.fetch();
+    startedSingle();
+    await singleGate;
+    await route.fulfill({ response });
+    fulfilledSingle();
+  });
+  await page.getByRole('button', { name: /Geçmiş denemeler/ }).click();
+  await page
+    .locator('.history-row')
+    .filter({ hasText: single.id.slice(0, 8) })
+    .click();
+  await singleStarted;
+  await page.getByRole('button', { name: /Geçmiş denemeler/ }).click();
+  await page
+    .locator('.history-row')
+    .filter({ hasText: workspace.id.slice(0, 8) })
+    .click();
+  await expect(page.locator('.diff-panel')).toContainText('canEdit');
+  releaseSingle();
+  await singleFulfilled;
+  await page.unroute(singleRoute);
+  await expect(page.locator('.diff-panel')).not.toContainText('canDelete');
+  await expect(page.locator('.diff-panel')).toContainText('canEdit');
+  checks.push(
+    'Source panels clear obsolete identities immediately and ignore delayed real responses from another run',
+  );
   const scope = page.getByRole('region', { name: 'Workspace doğrulama kapsamı', exact: true });
   await expect(scope).toContainText(workspace.evidence.planHash);
   await expect(scope).toContainText('Doğrulanmadı: packages/unrelated');
