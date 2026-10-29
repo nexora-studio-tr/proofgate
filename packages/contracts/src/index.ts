@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const VERSION = '0.1.0-alpha.3';
+export const VERSION = '0.1.0-alpha.3.1';
 export const idSchema = z.string().uuid();
 export const relativePath = z
   .string()

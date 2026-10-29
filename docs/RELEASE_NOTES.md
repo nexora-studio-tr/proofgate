@@ -1,4 +1,8 @@
-# ProofGate 0.1.0-alpha.3
+# ProofGate 0.1.0-alpha.3.1
+
+Fix a source-panel identity race when switching between recorded runs. Previously the next verdict could appear while the previous run's code remained visible; a delayed response could also restore that obsolete code. Source observations now bind to both run ID and candidate hash, and abandoned responses cannot update the active panel. Real delayed-response browser tests cover both transitions.
+
+Türkçe: Denemeler arasında geçişte eski kodun yeni kanıtla birlikte görünmesi giderildi. Kaynak yanıtı deneme ve aday kimliğine bağlandı; geciken eski yanıt yeni görünümü değiştiremez. İki gerçek HTTP geciktirme senaryosuyla doğrulandı. Alpha.3 workspace kapsamı korunur.
 
 **One change. One plan. Evidence across packages.**
 

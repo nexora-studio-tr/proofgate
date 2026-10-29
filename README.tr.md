@@ -2,7 +2,7 @@
 
 **Değişiklik ve kanıtı.** Claude Code, Codex veya editörünüzle yazdığınız kod için eski/yeni test karşılaştırması ve kontrollü hata denemeleri.
 
-**[Alpha.3](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3)**, [kontrollü npm workspace doğrulaması](docs/WORKSPACE-EXECUTION.tr.md) ekler: en fazla beş paket için tek sabit plan, yedi önce/sonra denemesi ve ortak koddaki kontrollü hatayı hangi tüketici testinin yakaladığını gösteren mutasyon kanıtı.
+**[Alpha.3.1](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3.1)**, [kontrollü npm workspace doğrulaması](docs/WORKSPACE-EXECUTION.tr.md) ekler: en fazla beş paket için tek sabit plan, yedi önce/sonra denemesi ve ortak koddaki kontrollü hatayı hangi tüketici testinin yakaladığını gösteren mutasyon kanıtı.
 
 [Canlı demo](https://proofgate-demo.onrender.com/) · [English](README.md) · [Kurulum](docs/SETUP.tr.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](SECURITY.md)
 

@@ -1,6 +1,12 @@
 # Implementation and validation status
 
-Version: **0.1.0-alpha.3**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+Version: **0.1.0-alpha.3.1**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+
+## Alpha.3.1 source-panel identity correction — 2026-10-29
+
+The final live visual check exposed a source-panel race: switching records could briefly pair a new verdict with old source, and a late obsolete response could overwrite the active source view. Bind each source observation to run ID plus candidate hash and discard responses after effect cleanup. The panel shows a placeholder while the matching observation is pending.
+
+Local real-browser validation passed ten checks, including two controlled response delays: the old code disappears immediately on selection, and an older response arriving after the new one cannot replace the new source. The alpha.3 workspace feature, v1/v2 evidence formats and original recorded provenance remain unchanged. Prior alpha.3 assets retain their original identity; this correction receives a separate version.
 
 ## Alpha.3 controlled workspace execution — 2026-10-29
 
