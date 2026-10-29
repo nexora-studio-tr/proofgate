@@ -4,6 +4,7 @@ import type {
   WorkspacePolicy,
   Trial,
   Finding,
+  Evidence,
 } from '../../contracts/src/index.js';
 import { finding } from '../../contracts/src/index.js';
 import { changedFiles, digest, stable } from './index.js';
@@ -33,6 +34,8 @@ export function workspacePlan(base: Snapshot, head: Snapshot, policy: WorkspaceP
       /(?:^|\/)(?:package(?:-lock)?\.json|.*\.config\.[^/]+|tsconfig[^/]*\.json)$/.test(file)
     )
       throw Error('WORKSPACE_CONFIGURATION_CHANGED');
+    if (!policy.testFiles.includes(file) && !policy.productionFiles.includes(file))
+      throw Error('WORKSPACE_SOURCE_SCOPE_INCOMPLETE');
   }
   if (impact.affected.some((p) => p.path !== '.' && !selected.has(p.path)))
     throw Error('WORKSPACE_SELECTION_INCOMPLETE');
@@ -116,4 +119,53 @@ export function workspaceTrialFindings(trials: Trial[], policy: WorkspacePolicy)
         );
     }
   return out;
+}
+
+export function workspaceMemberResults(
+  evidence: Pick<Evidence, 'trials' | 'mutations' | 'findings' | 'verdict'>,
+  policy: WorkspacePolicy,
+): NonNullable<Evidence['workspace']>['members'] {
+  const h = evidence.trials.filter((t) => t.variant === 'H');
+  return policy.members.map((member) => {
+    const required = policy.requiredTests.filter((id) => id.startsWith(member.path + '::'));
+    const observed = required.filter(
+      (id) =>
+        h.length === 3 &&
+        h.every(
+          (t) =>
+            t.status === 'complete' &&
+            !t.errors.length &&
+            t.tests.some((x) => x.name === id && x.status === 'passed'),
+        ),
+    ).length;
+    const failed =
+      h.some(
+        (t) =>
+          t.status === 'complete' &&
+          !t.errors.length &&
+          required.some((id) => !t.tests.some((x) => x.name === id && x.status === 'passed')),
+      ) ||
+      evidence.mutations.some(
+        (m) =>
+          m.file.startsWith(member.path + '/') &&
+          (m.status === 'survived' || m.status === 'uncovered'),
+      ) ||
+      (policy.regressionTest.startsWith(member.path + '::') &&
+        evidence.trials.some(
+          (t) =>
+            t.variant === 'C' &&
+            t.tests.some((x) => x.name === policy.regressionTest && x.status === 'passed'),
+        )) ||
+      evidence.findings.some((f) => f.severity === 'fail' && f.file?.startsWith(member.path + '/'));
+    return {
+      path: member.path,
+      required: required.length,
+      observed,
+      status: failed
+        ? 'fail'
+        : evidence.verdict === 'pass' && observed === required.length
+          ? 'pass'
+          : 'inconclusive',
+    };
+  });
 }

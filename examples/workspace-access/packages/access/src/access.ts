@@ -1,1 +1,1 @@
-export function canEdit(role: string) { if (role === 'viewer') return true; return role === 'admin'; }
+export function canEdit(role: string, locked = false) { if (locked) return true; return role === 'admin'; }

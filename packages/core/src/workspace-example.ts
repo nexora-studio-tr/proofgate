@@ -9,14 +9,18 @@ export const workspaceExamplePolicy = workspacePolicySchema.parse({
   profile: 'npm-workspace-node-v1',
   members: members.map((path) => ({
     path,
-    baselineTests: [workspaceTestId(path, file(path), 'admin allowed')],
+    baselineTests: [
+      workspaceTestId(path, file(path), 'admin allowed'),
+      ...(path === 'packages/access' ? [workspaceTestId(path, file(path), 'viewer denied')] : []),
+    ],
   })),
   testFiles: members.map(file),
   requiredTests: [
     ...members.map((m) => workspaceTestId(m, file(m), 'admin allowed')),
-    workspaceTestId('apps/api', file('apps/api'), 'viewer denied'),
+    workspaceTestId('packages/access', file('packages/access'), 'viewer denied'),
+    workspaceTestId('apps/api', file('apps/api'), 'locked admin denied'),
   ],
-  regressionTest: workspaceTestId('apps/api', file('apps/api'), 'viewer denied'),
+  regressionTest: workspaceTestId('apps/api', file('apps/api'), 'locked admin denied'),
   expectedFailure: 'expected true to be false',
   productionFiles: ['packages/access/src/access.ts'],
   budget: { stageMs: 120000, totalMs: 600000, mutants: 25 },
@@ -51,11 +55,11 @@ export function workspaceExample(kind: 'strong' | 'weak' | 'broken' | 'crash' = 
       }) + '\n';
   }
   files['packages/access/src/access.ts'] =
-    "export function canEdit(role: string) { if (role === 'viewer') return true; return role === 'admin'; }\n";
+    "export function canEdit(role: string, locked = false) { if (locked) return true; return role === 'admin'; }\n";
   files['apps/api/src/api.ts'] =
-    "import {canEdit} from '@fixture/access'; export const request=(role:string)=>canEdit(role);\n";
+    "import {canEdit} from '@fixture/access'; export const request=(role:string,locked=false)=>canEdit(role,locked);\n";
   files['apps/audit/src/audit.ts'] =
-    "import {request} from '@fixture/api'; export const mayRecord=(role:string)=>request(role);\n";
+    "import {request} from '@fixture/api'; export const mayRecord=(role:string,locked=false)=>request(role,locked);\n";
   files['packages/unrelated/src/value.ts'] = "export const unrelated='not verified';\n";
   for (const member of members) {
     const name = member.split('/').at(-1)!,
@@ -63,6 +67,8 @@ export function workspaceExample(kind: 'strong' | 'weak' | 'broken' | 'crash' = 
     files[file(member)] =
       `import {test,expect} from 'vitest'; import {${fn}} from '../src/${name}.ts';\ntest('admin allowed',()=>expect(${fn}('admin')).toBe(true));\n`;
   }
+  files[file('packages/access')] +=
+    "test('viewer denied',()=>expect(canEdit('viewer')).toBe(false));\n";
   const head = { ...files };
   if (kind !== 'broken')
     head['packages/access/src/access.ts'] =
@@ -71,7 +77,7 @@ export function workspaceExample(kind: 'strong' | 'weak' | 'broken' | 'crash' = 
         : files['packages/access/src/access.ts']!.replace('return true', 'return false');
   head[file('apps/api')] +=
     kind === 'weak'
-      ? "test('viewer denied',()=>expect(typeof request('viewer')).toBe('boolean'));\n"
-      : "test('viewer denied',()=>expect(request('viewer')).toBe(false));\n";
+      ? "test('locked admin denied',()=>expect(typeof request('admin',true)).toBe('boolean'));\n"
+      : "test('locked admin denied',()=>expect(request('admin',true)).toBe(false));\n";
   return { base: snapshot(files), head: snapshot(head), policy: workspaceExamplePolicy };
 }

@@ -1458,3 +1458,18 @@ footer {
   display: block;
   font-size: 0.8rem;
 }
+.workspace-scope {
+  margin-block: 20px;
+  overflow-wrap: anywhere;
+}
+.scope-identity {
+  padding: 0 24px 14px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.scope-identity code {
+  display: block;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}

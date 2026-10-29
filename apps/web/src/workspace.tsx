@@ -1,5 +1,105 @@
 import { useEffect, useRef, useState } from 'react';
 import type { WorkspaceImpact } from '../../../packages/core/src/workspace.js';
+import type { Verdict } from '../../../packages/contracts/src/index.js';
+
+export function WorkspaceScope({
+  language,
+  scope,
+  planHash,
+}: {
+  language: 'en' | 'tr';
+  scope: {
+    selected: { path: string; name: string; reason: string; via: string[] }[];
+    unselected: string[];
+    members?: { path: string; required: number; observed: number; status: Verdict }[];
+  };
+  planHash?: string | undefined;
+}) {
+  const t = (en: string, tr: string) => (language === 'en' ? en : tr);
+  const status = {
+    pass: t('Passed', 'Geçti'),
+    fail: t('Failed', 'Başarısız'),
+    inconclusive: t('Incomplete', 'Belirsiz'),
+  };
+  return (
+    <section
+      className="panel workspace-scope"
+      aria-label={t('Workspace verification scope', 'Workspace doğrulama kapsamı')}
+    >
+      <div className="panel-header">
+        <h2>{t('One plan. Every required package.', 'Tek plan. Her zorunlu paket.')}</h2>
+        <span>
+          {scope.selected.length} {t('selected', 'seçildi')}
+        </span>
+      </div>
+      {planHash && (
+        <p className="scope-identity">
+          {t('Frozen plan', 'Sabit plan')} <code>{planHash}</code>
+        </p>
+      )}
+      <div className="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>{t('Package', 'Paket')}</th>
+              <th>{t('Why included', 'Seçim nedeni')}</th>
+              <th>{t('Required evidence', 'Zorunlu kanıt')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scope.selected.map((member) => {
+              const result = scope.members?.find((m) => m.path === member.path);
+              return (
+                <tr key={member.path}>
+                  <td>
+                    <strong>{member.name}</strong>
+                    <code className="replacement">{member.path}</code>
+                  </td>
+                  <td>
+                    {member.reason === 'direct'
+                      ? t('Changed files', 'Değişen dosyalar')
+                      : member.reason === 'dependent'
+                        ? t('Consumer of changed code', 'Değişen kodun tüketicisi')
+                        : t('Required by policy', 'Politikada zorunlu')}
+                    <code className="replacement">{member.via.join(' → ')}</code>
+                  </td>
+                  <td>
+                    {result ? (
+                      <>
+                        <strong>{status[result.status]}</strong>
+                        <span className="replacement">
+                          {result.observed}/{result.required}{' '}
+                          {t(
+                            'tests passed in all three candidate trials',
+                            'test, üç aday denemesinde de geçti',
+                          )}
+                        </span>
+                      </>
+                    ) : (
+                      t('Not executed yet', 'Henüz çalıştırılmadı')
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="scope-identity">
+        {t(
+          'Shared job budget; a package result cannot replace another package’s evidence.',
+          'İş bütçesi ortaktır; bir paketin sonucu diğerinin kanıtı yerine geçmez.',
+        )}
+      </p>
+      {!!scope.unselected.length && (
+        <p className="scope-identity">
+          <strong>{t('Not verified', 'Doğrulanmadı')}: </strong>
+          {scope.unselected.join(', ')}
+        </p>
+      )}
+    </section>
+  );
+}
 
 export function WorkspacePreflight({
   language,

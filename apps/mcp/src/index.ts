@@ -74,7 +74,7 @@ export async function startMcp(dataDir: string) {
         );
       register(
         'inspect_change',
-        'Inspect exact change hashes and manifest workspace impact for a registered project. Read-only preflight; monorepo execution is unsupported.',
+        'Inspect exact change hashes and manifest workspace impact for a registered project. Read-only; execution requires its reviewed profile and a frozen plan.',
         verifyInput,
         true,
         (a) => api('/api/inspect', a),
@@ -113,6 +113,18 @@ export async function startMcp(dataDir: string) {
                   gateApplicableToCurrentWorkspace: !stale,
                   baseHash: e.baseHash,
                   candidateHash: e.candidateHash,
+                  schemaVersion: e.schemaVersion,
+                  planHash: e.planHash,
+                  ...(e.workspace
+                    ? {
+                        workspace: {
+                          profile: e.workspace.profile,
+                          selected: e.workspace.selected,
+                          unselected: e.workspace.unselected,
+                          members: e.workspace.members,
+                        },
+                      }
+                    : {}),
                   scope: e.scope,
                   mutationScope: e.mutationScope,
                   findings: e.findings.slice(0, 20),
@@ -134,7 +146,7 @@ export async function startMcp(dataDir: string) {
         z
           .object({
             runId: idSchema,
-            section: z.enum(['findings', 'trials', 'mutations']),
+            section: z.enum(['findings', 'trials', 'mutations', 'workspace', 'links']),
             offset: z.number().int().min(0).max(10000).default(0),
             limit: z.number().int().min(1).max(25).default(10),
           })
@@ -154,9 +166,15 @@ export async function startMcp(dataDir: string) {
                     message: test.message.slice(0, 1000),
                   })),
                 )
-              : a.section === 'mutations'
-                ? e.mutations
-                : e.findings;
+              : a.section === 'workspace'
+                ? (e.workspace?.members ?? [])
+                : a.section === 'links'
+                  ? (e.workspace?.links ?? []).flatMap((record) =>
+                      record.links.map((link) => ({ root: record.root, ...link })),
+                    )
+                  : a.section === 'mutations'
+                    ? e.mutations
+                    : e.findings;
           return {
             section: a.section,
             total: records.length,

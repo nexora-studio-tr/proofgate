@@ -34,6 +34,8 @@ export function workspaceInstall(s: Snapshot) {
   );
   for (const manifest of manifests.values()) {
     if (
+      typeof manifest.name !== 'string' ||
+      manifest.name.length > 214 ||
       !/^(@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(manifest.name) ||
       ['vitest', 'vite'].includes(manifest.name) ||
       /^@(?:vitest|stryker-mutator)\//.test(manifest.name)

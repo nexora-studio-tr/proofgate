@@ -12,9 +12,9 @@ const runner = await imageId();
 const image = await prepareDependencies(workspaceExample().head, runner, data);
 const cases = process.argv.includes('--spike')
   ? ['strong']
-  : ['strong', 'weak', 'crash', 'cap', 'budget', 'cancel'];
+  : ['strong', 'weak', 'broken', 'crash', 'cap', 'budget', 'cancel'];
 for (const kind of cases) {
-  const pair = workspaceExample(['weak', 'crash'].includes(kind) ? kind : 'strong');
+  const pair = workspaceExample(['weak', 'broken', 'crash'].includes(kind) ? kind : 'strong');
   if (kind === 'cap')
     pair.policy = { ...pair.policy, budget: { ...pair.policy.budget, mutants: 1 } };
   if (kind === 'budget')

@@ -5,14 +5,16 @@ import {
   workspacePlan,
   planDigest,
   workspaceTrialFindings,
+  workspaceMemberResults,
 } from '../packages/core/src/workspace-plan.js';
 import { validateDependencies, dependencyKey } from '../packages/runner/src/dependencies.js';
 import { snapshot } from '../packages/snapshots/src/index.js';
+import type { Trial } from '../packages/contracts/src/index.js';
 
 test('workspace policy binds unique member/file/test identities and one global budget', () => {
   const p = workspaceExample().policy;
   expect(p.members).toHaveLength(3);
-  expect(new Set(p.requiredTests).size).toBe(4);
+  expect(new Set(p.requiredTests).size).toBe(5);
   expect(workspacePolicySchema.safeParse({ ...p, requiredTests: ['admin allowed'] }).success).toBe(
     false,
   );
@@ -65,6 +67,77 @@ test('manifest/topology/config edits and unknown test roots cannot enter executi
   expect(
     workspacePolicySchema.safeParse({ ...p.policy, testFiles: ['../outside.test.ts'] }).success,
   ).toBe(false);
+  expect(() =>
+    workspacePlan(
+      p.base,
+      snapshot({
+        ...p.head.files,
+        'apps/api/src/undeclared.ts': 'export const unreviewed = true;',
+      }),
+      p.policy,
+    ),
+  ).toThrow('WORKSPACE_SOURCE_SCOPE_INCOMPLETE');
+});
+
+test('a green candidate suite cannot hide a surviving shared mutation or a weak regression', () => {
+  const policy = workspaceExample().policy;
+  const trials: Trial[] = [1, 2, 3].map((index) => ({
+    variant: 'H',
+    index,
+    status: 'complete',
+    errors: [],
+    elapsedMs: 1,
+    tests: policy.requiredTests.map((name) => ({
+      name,
+      status: 'passed',
+      message: '',
+      assertion: false,
+    })),
+  }));
+  const evidence = { trials, mutations: [], findings: [], verdict: 'pass' as const };
+  expect(workspaceMemberResults(evidence, policy).every((m) => m.status === 'pass')).toBe(true);
+  const survived = workspaceMemberResults(
+    {
+      ...evidence,
+      verdict: 'fail',
+      mutations: [
+        {
+          id: '0',
+          file: 'packages/access/src/access.ts',
+          line: 1,
+          mutator: 'BooleanLiteral',
+          replacement: 'true',
+          status: 'survived',
+          engineStatus: 'Survived',
+          killedBy: [],
+        },
+      ],
+    },
+    policy,
+  );
+  expect(survived.find((m) => m.path === 'packages/access')?.status).toBe('fail');
+  expect(survived.some((m) => m.status === 'pass')).toBe(false);
+  const weak = workspaceMemberResults(
+    {
+      ...evidence,
+      verdict: 'fail',
+      trials: [
+        ...trials,
+        {
+          ...trials[0]!,
+          variant: 'C',
+          tests: [{ name: policy.regressionTest, status: 'passed', message: '', assertion: false }],
+        },
+      ],
+    },
+    policy,
+  );
+  expect(weak.find((m) => m.path === 'apps/api')?.status).toBe('fail');
+  const partial = workspaceMemberResults(
+    { ...evidence, verdict: 'inconclusive', trials: trials.slice(0, 2) },
+    policy,
+  );
+  expect(partial.every((m) => m.status === 'inconclusive')).toBe(true);
 });
 test('real npm lock links are allowed only for frozen internal members', () => {
   const p = workspaceExample();

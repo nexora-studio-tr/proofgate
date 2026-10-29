@@ -7,6 +7,7 @@ import { VERSION, finding, workspaceTestId, relativePath } from '../../contracts
 import {
   workspacePlan,
   workspaceTrialFindings,
+  workspaceMemberResults,
   planDigest,
 } from '../../core/src/workspace-plan.js';
 import { validateDependencies } from './dependencies.js';
@@ -405,30 +406,6 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
       ),
     );
   } finally {
-    if (policy.schemaVersion === 2 && e.workspace)
-      e.workspace.members = policy.members.map((m) => {
-        const required = policy.requiredTests.filter((id) => id.startsWith(m.path + '::'));
-        const h = e.trials.filter((t) => t.variant === 'H');
-        const observed = required.filter(
-          (id) =>
-            h.length === 3 &&
-            h.every(
-              (t) =>
-                t.status === 'complete' &&
-                !t.errors.length &&
-                t.tests.some((x) => x.name === id && x.status === 'passed'),
-            ),
-        ).length;
-        const failed = h.some((t) =>
-          t.tests.some((x) => required.includes(x.name) && x.status !== 'passed'),
-        );
-        return {
-          path: m.path,
-          required: required.length,
-          observed,
-          status: failed ? 'fail' : observed === required.length ? 'pass' : 'inconclusive',
-        };
-      });
     if (options.signal?.aborted) {
       e.state = 'canceled';
       if (!e.findings.some((f) => f.code === 'CANCELED'))
@@ -444,6 +421,8 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
         finding('TOTAL_BUDGET_EXCEEDED', 'inconclusive', 'The total run budget was exceeded.'),
       );
     e.verdict = verdict(e.findings);
+    if (policy.schemaVersion === 2 && e.workspace)
+      e.workspace.members = workspaceMemberResults(e, policy);
     await rm(work, { recursive: true, force: true });
   }
   return e;
