@@ -29,7 +29,7 @@ Malformed/missing manifests, duplicate names, nested workspaces, local path depe
 
 Capture keeps the existing UTF-8, credential-path, symlink/submodule and 500-file / 4 MiB limits. Inspection allows 100 packages per snapshot (root included), 50 patterns and 128 KiB per manifest. If the package limit is exceeded, extra packages are not enumerated and the report is explicitly inconclusive. The MCP response limit remains 32 KiB; large reports must use the CLI/API instead of assuming a truncated success.
 
-`status: complete` means this bounded manifest graph was parsed. It does not establish import/runtime coupling, generated code, build-tool tasks, test coverage or correctness. Inspection does not select or skip verification tests. **Execution remains single-package npm/Vitest**; workspace plans return `WORKSPACE_EXECUTION_UNSUPPORTED` before enqueueing. The dependency runner also rejects workspaces. Actual monorepo execution needs separate isolation, policies and evidence.
+`status: complete` means this bounded manifest graph was parsed. It does not establish import/runtime coupling, generated code, build-tool tasks, test coverage or correctness. Inspection does not select or skip verification tests. Alpha.3 adds the separate reviewed [workspace execution profile](WORKSPACE-EXECUTION.md). An existing v1 policy still returns `WORKSPACE_EXECUTION_UNSUPPORTED` for workspaces; register an eligible v2 policy before execution. Inspection alone never authorizes execution.
 
 ## Türkçe
 
@@ -41,4 +41,4 @@ Desteklenen kalıplar tam yol parçaları, `*` ve `**` şeklindedir. Bozuk/eksik
 
 Sınırlar: görüntü başına kök dahil 100 paket, 50 kalıp, bildirim başına 128 KiB; kaynak için mevcut 500 dosya / 4 MiB ve gizli dosya/symlink kuralları. Paket sınırı aşılırsa fazladan paketler listelenmez ve belirsizlik açıklanır. MCP'nin 32 KiB yanıt sınırı aşılırsa CLI/API kullanılır. CLI çıkışı: tamamlanan ön inceleme `0`, belirsiz `2`, yakalama/komut hatası `1`.
 
-`complete`, yalnızca yakalanan bildirim grafiğinin okunduğunu belirtir; import ilişkisi, test kapsamı veya kod doğruluğu kanıtı değildir. **Çalıştırma hâlâ tek npm/Vitest paketidir.** Monorepo planı `WORKSPACE_EXECUTION_UNSUPPORTED` ile engellenir. Ön inceleme çalışan testleri seçmez veya atlamaz. Ekip ve proje anahtarı yetkileri korunur.
+`complete`, yalnızca yakalanan bildirim grafiğinin okunduğunu belirtir; import ilişkisi, test kapsamı veya kod doğruluğu kanıtı değildir. Alpha.3, ayrı bir [workspace yürütme profili](WORKSPACE-EXECUTION.tr.md) ekler. V1 politika workspace çalıştıramaz; uygun v2 politika kaydedilmelidir. Ön inceleme çalışan testleri seçmez veya atlamaz. Ekip ve proje anahtarı yetkileri korunur.

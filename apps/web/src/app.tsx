@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Dialog, DropdownMenu, Tabs } from 'radix-ui';
 import { setNonce } from 'get-nonce';
 import { TeamPanel, type TeamView } from './team.js';
 import { SelectControl } from './controls.js';
-import { WorkspacePreflight } from './workspace.js';
+import { WorkspacePreflight, WorkspaceScope } from './workspace.js';
 import type { Evidence } from '../../../packages/contracts/src/index.js';
 import './style.css';
 setNonce(document.querySelector('meta[name="csp-nonce"]')?.getAttribute('content') ?? '');
@@ -87,7 +87,7 @@ const copy = {
     mode: 'Recorded scope only',
     error: 'Request failed',
     workspaceBlocked:
-      'Workspace inspection is available; verification execution supports one npm package.',
+      'Workspace inspection is available. Register a reviewed workspace policy v2 before planning execution.',
     waiting: 'Waiting for reference evidence',
     hash: 'Candidate snapshot',
   },
@@ -159,7 +159,7 @@ const copy = {
     mode: 'Yalnızca kayıtlı kapsam',
     error: 'İstek başarısız',
     workspaceBlocked:
-      'Paket ön incelemesi kullanılabilir; doğrulama çalıştırması tek npm paketini destekler.',
+      'Paket ön incelemesi kullanılabilir. Çalıştırma planı için incelenmiş workspace v2 politikası kaydedin.',
     waiting: 'Örnek kanıt bekleniyor',
     hash: 'Aday kaynak görüntüsü',
   },
@@ -198,6 +198,11 @@ function App() {
     [plan, setPlan] = useState<any>(null),
     [busy, setBusy] = useState(false),
     [team, setTeam] = useState<TeamView | null>(null);
+  const planRevision = useRef(0);
+  useEffect(() => {
+    planRevision.current++;
+    setPlan(null);
+  }, [project, base, dialog]);
   const api = useCallback(
     async (route: string, data?: unknown) => {
       const response = await fetch(route, {
@@ -430,7 +435,13 @@ function App() {
           <span>
             {t.workspace}
             <span className="separator">/</span>
-            <strong>{projects.find((p) => p.id === run?.project_id)?.name ?? 'ProofGate'}</strong>
+            <strong>
+              {demo && e?.workspace
+                ? lang === 'en'
+                  ? 'Workspace access / example'
+                  : 'Workspace izinleri / örnek'
+                : (projects.find((p) => p.id === run?.project_id)?.name ?? 'ProofGate')}
+            </strong>
           </span>
           <div>
             {language}
@@ -499,6 +510,15 @@ function App() {
                                 : 'inconclusive'
                           ]
                         : r.stage}
+                      {r.evidence && (
+                        <small>
+                          {r.evidence.workspace
+                            ? `${r.evidence.workspace.selected.length} ${lang === 'en' ? 'workspace packages' : 'workspace paketi'}`
+                            : lang === 'en'
+                              ? 'Single package'
+                              : 'Tek paket'}
+                        </small>
+                      )}
                     </span>
                     <time>{new Date(r.created).toLocaleString(lang)}</time>
                     <span>↗</span>
@@ -582,6 +602,9 @@ function App() {
                       note={t.detected}
                     />
                   </section>
+                  {e.workspace && (
+                    <WorkspaceScope language={lang} scope={e.workspace} planHash={e.planHash} />
+                  )}
                   <div className="review-grid">
                     <section className="panel diff-panel">
                       <div className="panel-header">
@@ -751,9 +774,13 @@ function App() {
                 event.preventDefault();
                 void perform(async () => {
                   if (!plan) {
-                    setPlan(
-                      await api('/api/plans', { projectId: project, baseRef: base, include: [] }),
-                    );
+                    const revision = ++planRevision.current;
+                    const frozen = await api('/api/plans', {
+                      projectId: project,
+                      baseRef: base,
+                      include: [],
+                    });
+                    if (revision === planRevision.current) setPlan(frozen);
                   } else {
                     const r = await api('/api/runs', { planId: plan.planId });
                     setSelected(r.runId);
@@ -789,6 +816,8 @@ function App() {
                 <div className="plan-summary">
                   <span>{t.hash}</span>
                   <code>{plan.candidateHash.slice(0, 24)}</code>
+                  <span>{lang === 'en' ? 'Plan identity' : 'Plan kimliği'}</span>
+                  <code>{plan.planHash}</code>
                   <span>{t.budget}</span>
                   <p>
                     {plan.budget.mutants} mutations · {plan.budget.totalMs / 60000} min
@@ -798,6 +827,13 @@ function App() {
                       <li key={f}>{f}</li>
                     ))}
                   </ul>
+                  {plan.workspace && (
+                    <WorkspaceScope
+                      language={lang}
+                      scope={plan.workspace}
+                      planHash={plan.planHash}
+                    />
+                  )}
                 </div>
               )}
               <WorkspacePreflight

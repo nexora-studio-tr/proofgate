@@ -14,6 +14,8 @@ The adapter requires exact Vitest 5.0.5, a single npm v3 lockfile and integrity-
 
 The policy selects test paths, mandatory test names, one regression test, its expected assertion-message signature and production paths. The first adapter transfers standalone registered test files to the base. New APIs, dependencies or helpers that prevent a comparable run are inconclusive. Pre-existing baseline failures prevent a pass. Start with [the example policy](../examples/access-control/proofgate-policy.json).
 
+For npm monorepos use the reviewed [workspace v2 profile](WORKSPACE-EXECUTION.md), with member/file/test identities and one shared execution budget. Existing v1 policies remain single-package.
+
 Working snapshots include tracked text and explicitly selected new files. Limits: 500 files, 512 KiB per file, 4 MiB total and 30 test files. Credentials, `.env*`, runtime/dependency directories, symlinks and submodules are excluded or rejected. Review exports before sharing: name/pattern filters are not comprehensive secret detection.
 
 ## Results and limits
@@ -47,7 +49,7 @@ The operator runs `recovery --email ADDRESS --data .proofgate-team` to issue a 3
 - Dependencies not prepared: `doctor --build --project ID` against the current lock.
 - Source changed: freeze a new plan; do not reuse an old green result.
 - Mutation cap: narrow the registered production scope.
-- Private registry, monorepo or config-dependent tests: unsupported by this adapter.
+- Private registries and config-dependent tests are unsupported. npm workspaces need the reviewed v2 [workspace profile](WORKSPACE-EXECUTION.md).
 - Restart: let the supervisor recover only its own work; do not remove a live lock.
 
 [Türkçe](SETUP.tr.md) · [Security reporting](../SECURITY.md)

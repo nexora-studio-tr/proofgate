@@ -851,6 +851,12 @@ select {
   display: grid;
   gap: 7px;
   font-size: 11px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dialog form > *,
+.plan-summary > * {
+  min-width: 0;
 }
 .plan-summary span {
   font-size: 9px;
@@ -1457,4 +1463,37 @@ footer {
 .workspace-preflight li code {
   display: block;
   font-size: 0.8rem;
+}
+.workspace-scope {
+  margin-block: 20px;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.history-row small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.scope-identity {
+  padding: 0 24px 14px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.scope-identity code {
+  display: block;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .workspace-scope table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+  .workspace-scope th,
+  .workspace-scope td {
+    padding: 12px 8px;
+    overflow-wrap: anywhere;
+  }
 }

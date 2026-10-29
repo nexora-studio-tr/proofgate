@@ -45,7 +45,7 @@ SMTP, açık kayıt, SSO ve MFA kapsam dışıdır. Sunucu varsayılan olarak il
 - Bağımlılık imajı yok: güncel kilit için `doctor --build --project ID`.
 - Kaynak değişti: yeni plan; eski yeşil sonucu yeni koda bağlamayın.
 - Mutasyon sınırı: üretim kapsamını daraltın.
-- Özel paket/monorepo/özel test ayarı: ilk adaptör desteklemez.
+- Özel paket deposu ve keyfi test ayarı desteklenmez. npm workspace için incelenmiş [v2 profilini](WORKSPACE-EXECUTION.tr.md) kullan.
 - Yeniden başlatma: sahipli temizlik tamamlansın; çalışan lock dosyasını silmeyin.
 
 [English](SETUP.md) · [Güvenlik bildirimi](../SECURITY.md)

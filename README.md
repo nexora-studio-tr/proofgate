@@ -2,7 +2,7 @@
 
 **A change. Its evidence.** Before/after tests and bounded mutation evidence for changes written with Claude Code, Codex or your editor.
 
-**[Alpha.2](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.2)** adds [workspace impact preflight](docs/WORKSPACE-IMPACT.md) through the CLI, MCP and TR/EN UI. Review direct changes, transitive dependants and uncertainty before execution. The verifier still executes one npm package at a time.
+**[Alpha.3](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3)** adds [controlled npm workspace verification](docs/WORKSPACE-EXECUTION.md): one frozen plan for up to five packages, seven before/after trials and mutation evidence that identifies the consumer test which caught a shared-code defect.
 
 [Live demo](https://proofgate-demo.onrender.com/) · [Türkçe](README.tr.md) · [Setup](docs/SETUP.md) · [Architecture](docs/ARCHITECTURE.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
@@ -13,6 +13,7 @@ An agent can fix a permission check and add a test that also passes on the broke
 ## What it does
 
 - One baseline and three fresh before/after pairs in resource-limited offline Linux containers.
+- A reviewed workspace profile with package selection reasons, namespaced test identities and explicit unverified members.
 - Changed-source mutation scope using StrykerJS/Vitest, with a hard cap before mutation execution.
 - Findings for removed mandatory tests, `skip/only/todo`, configuration changes and mutation exclusions.
 - Explicit `pass`, `fail` and `inconclusive` results. Crashes, timeouts, zero tests and incomplete work cannot establish a successful fix.
@@ -44,6 +45,16 @@ node dist/apps/cli/src/index.js verify --project PROJECT_ID --base BASE_COMMIT
 
 Keep the local server running. CLI and MCP use the same supervisor and queue. Start with [the example policy](examples/access-control/proofgate-policy.json) and [setup instructions](docs/SETUP.md). The initial adapter pins Vitest 5.0.5 and uses a trusted standalone Node test configuration. Test names must be unique in the registered scope.
 
+To try the workspace example alongside the default single-package example:
+
+```sh
+node dist/apps/cli/src/index.js example --workspace
+node dist/apps/cli/src/index.js doctor --project PROJECT_ID
+node dist/apps/cli/src/index.js verify --project PROJECT_ID --base HEAD
+```
+
+Use the ID printed by `example --workspace`. The sample selects a shared permissions package, an API consumer and a transitive audit consumer; a fourth package remains visibly unverified. [Workspace setup and policy](docs/WORKSPACE-EXECUTION.md).
+
 ## Claude Code and Codex
 
 With the server running, generate a complete local plugin package:
@@ -63,7 +74,7 @@ The printed folder contains the shared skill, project IDs and an absolute-path M
 node dist/apps/cli/src/index.js demo --port 4328 --data .proofgate-demo
 ```
 
-The read-only demo displays a **recorded real execution of the bundled synthetic project**. Visitors cannot upload code, run jobs or access team/admin data. It is separate from live verification of your repository. [Reference evidence](examples/evidence/strong.json) · [Free Render deployment](docs/DEPLOY.md).
+The read-only demo displays **recorded real executions of the bundled synthetic projects**. Open run history to switch between single-package and workspace evidence. Visitors cannot upload code, run jobs or access team/admin data. [Single-package evidence](examples/evidence/strong.json) · [Workspace evidence and provenance](examples/evidence/WORKSPACE-PROVENANCE.md) · [Free Render deployment](docs/DEPLOY.md).
 
 ## Validation
 
@@ -73,6 +84,7 @@ npm run format:check
 npm run test:docker -- --all
 npm run test:isolation
 npm run test:integration
+npm run test:workspace-execution
 npm run test:browser -- --start
 npm run test:team-browser
 npm run release:pack
@@ -83,6 +95,6 @@ Execution checks require Docker. Browser checks also need `npx playwright instal
 
 ## Scope
 
-Initial support is a single npm package, TypeScript/JavaScript and offline Node-mode Vitest tests. Source capture is capped at 500 files, 512 KiB per file and 4 MiB total. Public npm dependencies must be integrity-pinned; install scripts are disabled. Browser/E2E adapters, private registries, monorepos, SMTP, SSO/MFA and automatic fixes are outside this release. Docker shares a kernel; this is not unrestricted hostile-code hosting.
+Support covers a single npm package or the reviewed `npm-workspace-node-v1` profile, TypeScript/JavaScript and offline Node-mode Vitest tests. Workspaces require unchanged manifests/lock/topology, root-hoisted dependencies and at most five selected members. Source capture remains capped at 500 files, 512 KiB per file and 4 MiB total. Public npm dependencies must be integrity-pinned; install scripts are disabled. pnpm/Yarn, build scripts, arbitrary test configuration, browser/E2E adapters, private registries, SMTP, SSO/MFA and automatic fixes are outside this release. Docker shares a kernel; this is not unrestricted hostile-code hosting.
 
 ReproPack is a separate project. No commercial Discord bot source is included.

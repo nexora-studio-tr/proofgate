@@ -1,0 +1,9 @@
+{
+  "name": "proofgate-workspace-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "devDependencies": { "vitest": "5.0.5" },
+  "scripts": { "postinstall": "node -e \"throw new Error('WORKSPACE_LIFECYCLE_EXECUTED')\"" }
+}

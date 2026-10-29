@@ -60,10 +60,26 @@ try {
   assert.equal(session.identity, null);
   checks.push('No visitor account or default session');
   const runs = await (await fetch(origin + '/api/runs')).json();
-  assert.equal(runs.length, 1);
-  assert.equal(runs[0].evidence.verdict, 'pass');
-  assert.equal(runs[0].evidence.trials.length, 7);
-  checks.push('Recorded synthetic evidence available');
+  assert.equal(runs.length, 2);
+  assert.deepEqual(runs.map((r) => r.evidence.schemaVersion).sort(), [1, 2]);
+  for (const run of runs) {
+    assert.equal(run.evidence.verdict, 'pass');
+    assert.equal(run.evidence.trials.length, 7);
+    const read = await (await fetch(origin + '/api/runs/' + run.id)).json();
+    assert.equal(read.evidence.runId, run.evidence.runId);
+    assert.equal(read.evidence.candidateHash, run.evidence.candidateHash);
+    const report = await fetch(origin + `/api/runs/${run.id}/report`);
+    assert.match(report.headers.get('content-disposition'), /attachment/);
+    const html = await report.text();
+    assert.match(html, /ProofGate/);
+    if (run.evidence.workspace) {
+      assert.equal(run.evidence.workspace.selected.length, 3);
+      assert.deepEqual(run.evidence.workspace.unselected, ['packages/unrelated']);
+      assert.ok(html.includes(run.evidence.planHash));
+      assert.ok(html.includes('Not verified: packages/unrelated'));
+    }
+  }
+  checks.push('Both recorded evidence schemas preserve identities and scope in API/HTML exports');
   for (const route of ['/api/plans', '/api/runs', '/api/bootstrap', '/api/login', '/api/invites']) {
     const r = await fetch(origin + route, {
       method: 'POST',
@@ -77,10 +93,6 @@ try {
   checks.push('Team information unavailable');
   assert.equal((await fetch(origin + '/api/runs/' + randomUUID())).status, 404);
   checks.push('Unknown evidence identity rejected');
-  const report = await fetch(origin + `/api/runs/${runs[0].id}/report`);
-  assert.match(report.headers.get('content-disposition'), /attachment/);
-  assert.match(await report.text(), /ProofGate/);
-  checks.push('Evidence export');
   const user = await docker([
     'exec',
     name,

@@ -3,9 +3,11 @@ import path from 'node:path';
 import { Store, type Job, type Project } from '../../storage/src/index.js';
 import { verify } from './index.js';
 import { policySchema } from '../../contracts/src/index.js';
-import { snapshot } from '../../snapshots/src/index.js';
-import { policyDigest, digest } from '../../core/src/index.js';
+import { snapshot, captureWorking } from '../../snapshots/src/index.js';
+import { policyDigest } from '../../core/src/index.js';
 import { docker } from './process.js';
+import { dependencyKey } from './dependencies.js';
+import { planDigest } from '../../core/src/workspace-plan.js';
 export async function runWorker(dataDir: string, stop: AbortSignal) {
   const root = path.resolve(dataDir);
   await mkdir(root, { recursive: true });
@@ -116,7 +118,7 @@ export async function runWorker(dataDir: string, stop: AbortSignal) {
         const prepared = store.get<{ image: string }>(
           'SELECT image FROM project_images WHERE project_id=? AND lock_hash=? AND base_image=?',
           project.id,
-          digest(p.head.files['package-lock.json'] ?? ''),
+          dependencyKey(p.head),
           baseImage,
         );
         if (!prepared)
@@ -128,6 +130,10 @@ export async function runWorker(dataDir: string, stop: AbortSignal) {
           head = snapshot(p.head.files);
         if (base.hash !== p.base.hash || head.hash !== p.head.hash)
           throw new Error('PLAN_INTEGRITY');
+        if ((await captureWorking(project.root, p.include)).hash !== head.hash)
+          throw new Error('STALE_PLAN');
+        if (p.planHash !== planDigest(base, head, policy, p.baseImage, p.image))
+          throw Error('PLAN_INTEGRITY');
         const e = await verify({
           dataDir: root,
           projectId: job.project_id,
@@ -136,6 +142,8 @@ export async function runWorker(dataDir: string, stop: AbortSignal) {
           head,
           policy,
           image,
+          baseImage: p.baseImage,
+          planHash: p.planHash,
           signal: controller.signal,
           onProgress: (stage) => store.run('UPDATE jobs SET stage=? WHERE id=?', stage, job.id),
         });

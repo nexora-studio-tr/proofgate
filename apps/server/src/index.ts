@@ -28,7 +28,10 @@ import { captureBase, captureWorking } from '../../../packages/snapshots/src/ind
 import { changedFiles, policyDigest } from '../../../packages/core/src/index.js';
 import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { policySchema } from '../../../packages/contracts/src/index.js';
+import { dependencyKey } from '../../../packages/runner/src/dependencies.js';
+import { planDigest } from '../../../packages/core/src/workspace-plan.js';
 import { examplePair } from '../../../packages/core/src/examples.js';
+import { workspaceExample } from '../../../packages/core/src/workspace-example.js';
 
 interface Options {
   dataDir: string;
@@ -293,32 +296,32 @@ export async function createServer(options: Options) {
     return startVerification(store, i, planId);
   });
   const demoEvidence = async () => {
-    try {
-      return JSON.parse(
-        await readFile(
-          fileURLToPath(new URL('../../../../examples/evidence/strong.json', import.meta.url)),
-          'utf8',
-        ),
-      ) as Evidence;
-    } catch {
-      return null;
-    }
+    const records = await Promise.all(
+      ['strong.json', 'workspace-strong.json'].map(async (file) => {
+        try {
+          return JSON.parse(
+            await readFile(
+              fileURLToPath(new URL('../../../../examples/evidence/' + file, import.meta.url)),
+              'utf8',
+            ),
+          ) as Evidence;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return records.filter((e): e is Evidence => e !== null);
   };
   app.get('/api/runs', async (r) => {
     if (options.mode === 'demo') {
-      const e = await demoEvidence();
-      return e
-        ? [
-            {
-              id: e.runId,
-              project_id: 'demo',
-              state: 'completed',
-              stage: 'Bundled reference execution',
-              created: Date.parse(e.startedAt),
-              evidence: e,
-            },
-          ]
-        : [];
+      return (await demoEvidence()).map((e) => ({
+        id: e.runId,
+        project_id: 'demo',
+        state: 'completed',
+        stage: e.workspace ? 'Recorded workspace execution' : 'Bundled reference execution',
+        created: Date.parse(e.startedAt),
+        evidence: e,
+      }));
     }
     const i = auth(r);
     const scope = sessions.get(r)?.scope;
@@ -337,8 +340,8 @@ export async function createServer(options: Options) {
   };
   app.get('/api/runs/:id', async (r) => {
     if (options.mode === 'demo') {
-      const e = await demoEvidence();
-      if (!e || e.runId !== (r.params as { id: string }).id) throw new Error('NOT_FOUND');
+      const e = (await demoEvidence()).find((e) => e.runId === (r.params as { id: string }).id);
+      if (!e) throw new Error('NOT_FOUND');
       return { id: e.runId, state: 'completed', stage: 'reference', evidence: e };
     }
     const { plan, ...j } = owned(r);
@@ -347,8 +350,8 @@ export async function createServer(options: Options) {
   app.get('/api/runs/:id/report', async (r, reply) => {
     let e: Evidence;
     if (options.mode === 'demo') {
-      const found = await demoEvidence();
-      if (!found || found.runId !== (r.params as { id: string }).id) throw new Error('NOT_FOUND');
+      const found = (await demoEvidence()).find((e) => e.runId === (r.params as { id: string }).id);
+      if (!found) throw new Error('NOT_FOUND');
       e = found;
     } else {
       const j = owned(r);
@@ -362,13 +365,14 @@ export async function createServer(options: Options) {
   });
   app.get('/api/runs/:id/change', async (r) => {
     if (options.mode === 'demo') {
-      const e = await demoEvidence();
-      if (!e || e.runId !== (r.params as { id: string }).id) throw new Error('NOT_FOUND');
-      const p = examplePair();
+      const e = (await demoEvidence()).find((e) => e.runId === (r.params as { id: string }).id);
+      if (!e) throw new Error('NOT_FOUND');
+      const p = e.workspace ? workspaceExample() : examplePair();
+      const file = e.workspace ? 'packages/access/src/access.ts' : 'src/access.ts';
       return {
-        base: p.base.files['src/access.ts'],
-        head: p.head.files['src/access.ts'],
-        file: 'src/access.ts',
+        base: p.base.files[file],
+        head: p.head.files[file],
+        file,
         stale: false,
       };
     }
@@ -382,14 +386,15 @@ export async function createServer(options: Options) {
       const currentImage = store.get<{ image: string }>(
         'SELECT image FROM project_images WHERE project_id=? AND lock_hash=? AND base_image=?',
         project.id,
-        digest(p.head.files['package-lock.json'] ?? ''),
+        dependencyKey(p.head),
         p.baseImage ?? '',
       );
       stale =
         (await captureWorking(project.root, p.include)).hash !== p.head.hash ||
         policyDigest(policySchema.parse(JSON.parse(project.policy))) !== policyDigest(p.policy) ||
         store.meta('runner_image') !== p.baseImage ||
-        currentImage?.image !== p.image;
+        currentImage?.image !== p.image ||
+        p.planHash !== planDigest(p.base, p.head, p.policy, p.baseImage, p.image);
     } catch {}
     return { base: p.base.files[file] ?? '', head: p.head.files[file] ?? '', file, stale };
   });

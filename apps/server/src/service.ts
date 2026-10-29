@@ -1,8 +1,10 @@
 import { policySchema } from '../../../packages/contracts/src/index.js';
-import { changedFiles, policyDigest, digest } from '../../../packages/core/src/index.js';
+import { changedFiles, policyDigest } from '../../../packages/core/src/index.js';
 import { captureBase, captureWorking } from '../../../packages/snapshots/src/index.js';
 import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { Store, type Identity, type Plan } from '../../../packages/storage/src/index.js';
+import { workspacePlan, planDigest } from '../../../packages/core/src/workspace-plan.js';
+import { dependencyKey, validateDependencies } from '../../../packages/runner/src/dependencies.js';
 export async function planVerification(
   store: Store,
   i: Identity,
@@ -19,16 +21,20 @@ export async function planVerification(
   const base = await captureBase(project.root, baseRef);
   const head = await captureWorking(project.root, include);
   const impact = workspaceImpact(base, head);
-  if (impact.kind !== 'single-package') throw new Error('WORKSPACE_EXECUTION_UNSUPPORTED');
+  if (impact.kind !== 'single-package' && policy.schemaVersion !== 2)
+    throw new Error('WORKSPACE_EXECUTION_UNSUPPORTED');
+  const workspace = policy.schemaVersion === 2 ? workspacePlan(base, head, policy) : undefined;
+  if (workspace) validateDependencies(head);
   const baseImage = store.meta('runner_image');
   if (!baseImage) throw new Error('RUNNER_IMAGE_MISSING');
   const prepared = store.get<{ image: string }>(
     'SELECT image FROM project_images WHERE project_id=? AND lock_hash=? AND base_image=?',
     project.id,
-    digest(head.files['package-lock.json'] ?? ''),
+    dependencyKey(head),
     baseImage,
   );
   if (!prepared) throw new Error('DEPENDENCIES_NOT_PREPARED');
+  const planHash = planDigest(base, head, policy, baseImage, prepared.image);
   const id = store.addPlan(i, project, {
     base,
     head,
@@ -36,9 +42,12 @@ export async function planVerification(
     include,
     baseImage,
     image: prepared.image,
+    planHash,
   });
   return {
     planId: id,
+    planHash,
+    ...(workspace ? { workspace } : {}),
     projectId,
     baseHash: base.hash,
     candidateHash: head.hash,
@@ -69,10 +78,12 @@ export async function startVerification(store: Store, i: Identity, planId: strin
   const image = store.get<{ image: string }>(
     'SELECT image FROM project_images WHERE project_id=? AND lock_hash=? AND base_image=?',
     project.id,
-    digest(p.head.files['package-lock.json'] ?? ''),
+    dependencyKey(p.head),
     p.baseImage,
   );
   if (store.meta('runner_image') !== p.baseImage || image?.image !== p.image)
     throw new Error('IMAGE_CHANGED');
+  if (p.planHash !== planDigest(p.base, p.head, p.policy, p.baseImage, p.image))
+    throw Error('PLAN_INTEGRITY');
   return { runId: store.enqueue(i, planId) };
 }

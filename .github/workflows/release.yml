@@ -24,7 +24,16 @@ jobs:
       - run: npm run release:pack
       - run: |
           if gh release view "$GITHUB_REF_NAME" --json tagName >/dev/null 2>&1; then
-            echo "Release already exists; preserving its uploaded assets and notes."
+            asset_count=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets | length')
+            if [ "$asset_count" = "0" ]; then
+              gh release upload "$GITHUB_REF_NAME" artifacts/release/*.tgz artifacts/release/*.sha256
+            else
+              expected="proofgate-${GITHUB_REF_NAME#v}.tgz"
+              asset_names=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+              printf '%s\n' "$asset_names" | grep -Fx "$expected"
+              printf '%s\n' "$asset_names" | grep -Fx "$expected.sha256"
+              echo "Existing complete assets and notes are preserved."
+            fi
           else
             gh release create "$GITHUB_REF_NAME" artifacts/release/*.tgz artifacts/release/*.sha256 --verify-tag --prerelease --title "ProofGate $GITHUB_REF_NAME" --notes-file docs/RELEASE_NOTES.md
           fi

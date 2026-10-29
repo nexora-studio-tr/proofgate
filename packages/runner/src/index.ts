@@ -3,7 +3,14 @@ import { mkdir, writeFile, rm, chmod } from 'node:fs/promises';
 import path from 'node:path';
 import { z } from 'zod';
 import type { Evidence, Mutation, Policy, Snapshot, Trial } from '../../contracts/src/index.js';
-import { VERSION, finding } from '../../contracts/src/index.js';
+import { VERSION, finding, workspaceTestId, relativePath } from '../../contracts/src/index.js';
+import {
+  workspacePlan,
+  workspaceTrialFindings,
+  workspaceMemberResults,
+  planDigest,
+} from '../../core/src/workspace-plan.js';
+import { validateDependencies } from './dependencies.js';
 import {
   changedFiles,
   digest,
@@ -16,10 +23,13 @@ import {
 import { docker } from './process.js';
 
 const observation = z.object({
-  name: z.string().max(400),
+  name: z.string().max(1000),
   status: z.enum(['passed', 'failed', 'skipped']),
   message: z.string().max(16000),
   assertion: z.boolean(),
+  packagePath: relativePath.optional(),
+  file: relativePath.optional(),
+  fullName: z.string().max(400).optional(),
 });
 const testResult = z.object({
   tests: z.array(observation).max(1000),
@@ -35,6 +45,8 @@ export interface ExecutionOptions {
   runId?: string;
   signal?: AbortSignal;
   onProgress?: (stage: string) => void;
+  baseImage?: string;
+  planHash?: string;
 }
 export async function imageId(tag = 'proofgate-runner:0.1.0'): Promise<string> {
   const r = await docker(['image', 'inspect', '--format', '{{.Id}}', tag], { timeout: 15000 });
@@ -139,7 +151,7 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
   await mkdir(work, { recursive: true, mode: 0o700 });
   if (process.platform !== 'win32') await chmod(work, 0o700);
   const e: Evidence = {
-    schemaVersion: 1,
+    schemaVersion: policy.schemaVersion,
     toolVersion: VERSION,
     runId,
     projectId,
@@ -161,6 +173,45 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
     budget: policy.budget,
     simulated: false,
   };
+  let workspace: ReturnType<typeof workspacePlan> | undefined;
+  const collectLinks = (data: any, mutation = false) => {
+    if (!workspace || !e.workspace) return;
+    if (
+      !Array.isArray(data?.workspaceLinks) ||
+      !data.workspaceLinks.length ||
+      data.workspaceLinks.length > 10
+    )
+      throw Error('WORKSPACE_LINK_PROOF_MISSING');
+    if (
+      mutation &&
+      !data.workspaceLinks.some(
+        (r: any) => typeof r.root === 'string' && r.root.startsWith('/scratch/stryker/'),
+      )
+    )
+      throw Error('WORKSPACE_MUTATION_LINK_PROOF_MISSING');
+    for (const record of data.workspaceLinks) {
+      if (
+        typeof record.root !== 'string' ||
+        !(record.root === '/scratch/project' || record.root.startsWith('/scratch/stryker/')) ||
+        !Array.isArray(record.links) ||
+        record.links.length !== workspace.links.length
+      )
+        throw Error('WORKSPACE_LINK_PROOF_INVALID');
+      for (const local of workspace.links)
+        if (
+          !record.links.some(
+            (l: any) => l.name === local.name && l.target === record.root + '/' + local.path,
+          )
+        )
+          throw Error('WORKSPACE_LINK_TARGET_MISMATCH');
+      e.workspace.links.push(record);
+    }
+    if (typeof data.npmVersion !== 'string' || !/^\d+\.\d+\.\d+$/.test(data.npmVersion))
+      throw Error('WORKSPACE_NPM_IDENTITY_MISSING');
+    if (e.workspace.npmVersion && e.workspace.npmVersion !== data.npmVersion)
+      throw Error('WORKSPACE_NPM_IDENTITY_CHANGED');
+    e.workspace.npmVersion = data.npmVersion;
+  };
   const remaining = () =>
     Math.min(policy.budget.stageMs, policy.budget.totalMs - (Date.now() - started));
   const check = () => {
@@ -171,13 +222,19 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
     check();
     options.onProgress?.(`${variant}${index}`);
     const r = await container(
-      { mode: 'test', files, testFiles: policy.testFiles },
+      {
+        mode: 'test',
+        files,
+        testFiles: policy.testFiles.filter((f) => f in files),
+        ...(workspace ? { workspace } : {}),
+      },
       options.image,
       work,
       remaining(),
       options.signal,
     );
     const parsed = testResult.safeParse(r.data);
+    if (parsed.success) collectLinks(r.data);
     e.trials.push({
       variant,
       index,
@@ -188,6 +245,26 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
     });
   };
   try {
+    if (policy.schemaVersion === 2) {
+      workspace = workspacePlan(base, head, policy);
+      validateDependencies(head);
+      e.planHash = planDigest(
+        base,
+        head,
+        policy,
+        options.baseImage ?? options.image,
+        options.image,
+      );
+      if (options.planHash && options.planHash !== e.planHash) throw Error('PLAN_INTEGRITY');
+      e.workspace = {
+        profile: workspace.profile,
+        impactHash: workspace.impactHash,
+        selected: workspace.selected,
+        unselected: workspace.unselected,
+        links: [],
+        members: [],
+      };
+    }
     if (
       base.files['package-lock.json'] !== head.files['package-lock.json'] ||
       base.files['package.json'] !== head.files['package.json']
@@ -204,6 +281,7 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
       await trial('H', i, head.files);
     }
     e.findings.push(...evaluateTrials(e.trials, policy));
+    if (policy.schemaVersion === 2) e.findings.push(...workspaceTrialFindings(e.trials, policy));
     const mutate = policy.productionFiles
       .filter((f) => base.manifest[f] !== head.manifest[f] && f in head.files)
       .map((f) => {
@@ -234,6 +312,7 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
           testFiles: policy.testFiles,
           mutate,
           cap: policy.budget.mutants,
+          ...(workspace ? { workspace } : {}),
         },
         options.image,
         work,
@@ -241,11 +320,31 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
         options.signal,
       );
       if (r.data?.report && r.data?.scope) {
+        collectLinks(r.data, true);
         const report = r.data.report;
         const scope = r.data.scope;
+        const testIds = new Map<string, string>();
+        if (policy.schemaVersion === 2)
+          for (const [file, detail] of Object.entries(report.testFiles ?? {}) as [string, any][]) {
+            const member = policy.members.find((m) => file.startsWith(m.path + '/'));
+            if (member)
+              for (const t of detail.tests ?? [])
+                testIds.set(String(t.id), workspaceTestId(member.path, file, String(t.name)));
+          }
         for (const [file, detail] of Object.entries(report.files ?? {}) as [string, any][]) {
           for (const m of detail.mutants ?? []) {
-            const killedBy = Array.isArray(m.killedBy) ? m.killedBy.map(String) : [];
+            let killedBy: string[] = Array.isArray(m.killedBy) ? m.killedBy.map(String) : [];
+            if (policy.schemaVersion === 2)
+              killedBy = killedBy
+                .map((id) => {
+                  if (testIds.has(id)) return testIds.get(id)!;
+                  const split = id.indexOf('#'),
+                    file = id.slice(0, split),
+                    name = id.slice(split + 1);
+                  const member = policy.members.find((p) => file.startsWith(p.path + '/'));
+                  return split > 0 && member ? workspaceTestId(member.path, file, name) : '';
+                })
+                .filter((id) => policy.requiredTests.includes(id));
             const status: Mutation['status'] =
               m.status === 'Killed' && killedBy.length
                 ? 'detected'
@@ -322,6 +421,8 @@ export async function verify(options: ExecutionOptions): Promise<Evidence> {
         finding('TOTAL_BUDGET_EXCEEDED', 'inconclusive', 'The total run budget was exceeded.'),
       );
     e.verdict = verdict(e.findings);
+    if (policy.schemaVersion === 2 && e.workspace)
+      e.workspace.members = workspaceMemberResults(e, policy);
     await rm(work, { recursive: true, force: true });
   }
   return e;

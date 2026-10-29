@@ -15,7 +15,7 @@ export interface WorkspaceImpact {
   status: 'complete' | 'inconclusive';
   baseHash: string;
   candidateHash: string;
-  executionSupport: 'single-package-only';
+  executionSupport: 'reviewed-policy-required';
   packages: {
     path: string;
     name: string;
@@ -286,7 +286,7 @@ export function workspaceImpact(base: Snapshot, head: Snapshot): WorkspaceImpact
     status: diagnostics.length ? 'inconclusive' : 'complete',
     baseHash: base.hash,
     candidateHash: head.hash,
-    executionSupport: 'single-package-only',
+    executionSupport: 'reviewed-policy-required',
     packages,
     affected: [...affected.values()].sort((a, b) => a.path.localeCompare(b.path)),
     sharedFiles,

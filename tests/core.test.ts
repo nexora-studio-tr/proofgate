@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { policySchema, type Trial, type Evidence } from '../packages/contracts/src/index.js';
 import reference from '../examples/evidence/strong.json' with { type: 'json' };
+import workspaceReference from '../examples/evidence/workspace-strong.json' with { type: 'json' };
 import {
   evaluateTrials,
   evaluateMutations,
@@ -58,6 +59,18 @@ test('HTML evidence escapes untrusted finding text', () => {
   const html = htmlReport(e);
   expect(html).not.toContain('<img src=x');
   expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+});
+
+test('workspace export preserves recorded scope, plan and unverified members while escaping package text', () => {
+  const e = structuredClone(workspaceReference) as Evidence;
+  e.workspace!.selected[0]!.name = '<img src=x onerror=alert(1)>';
+  const html = htmlReport(e);
+  expect(html).toContain(e.planHash);
+  expect(html).toContain('Not verified: packages/unrelated');
+  expect(html).toContain('apps/api');
+  expect(html).toContain('2/2');
+  expect(html).not.toContain('<img src=x');
+  expect(html).toContain('&lt;img src=x');
 });
 describe('evidence policy', () => {
   test('accepts exact, complete, repeated differential observations', () =>

@@ -5,6 +5,8 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import { command, docker } from '../dist/packages/runner/src/process.js';
 import { Store } from '../dist/packages/storage/src/index.js';
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 const dataDir = path.resolve('artifacts/integration-validation', randomUUID()),
   origin = 'http://127.0.0.1:4360';
 await mkdir(dataDir, { recursive: true });
@@ -25,7 +27,7 @@ const server = spawn(
   ['dist/apps/cli/src/index.js', 'serve', '--port', '4360', '--data', dataDir],
   { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] },
 );
-let worker;
+let worker, workspaceClient;
 const checks = [];
 let logs = '';
 server.stderr.on('data', (d) => (logs += d.toString().slice(-3000)));
@@ -85,8 +87,69 @@ try {
   assert.equal(evidence.trials.length, 7);
   assert.ok(evidence.mutations.length > 0);
   checks.push('Prepared dependencies and fresh before/after trials');
+  const workspaceProject = JSON.parse(await cli(['example', '--workspace']));
+  await cli(['doctor', '--project', workspaceProject.projectId]);
+  const workspaceResult = JSON.parse(
+    await cli(['verify', '--project', workspaceProject.projectId, '--base', 'HEAD']),
+  );
+  assert.equal(workspaceResult.verdict, 'pass');
+  const workspaceEvidence = JSON.parse(
+    await readFile(path.join(workspaceResult.report, 'evidence.json'), 'utf8'),
+  );
+  assert.equal(workspaceEvidence.schemaVersion, 2);
+  assert.equal(workspaceEvidence.trials.length, 7);
+  assert.ok(workspaceEvidence.workspace.members.every((m) => m.status === 'pass'));
+  assert.ok(
+    workspaceEvidence.mutations.some(
+      (m) =>
+        m.file.startsWith('packages/access/') &&
+        m.status === 'detected' &&
+        m.killedBy.some((id) => id.startsWith('apps/api::')),
+    ),
+  );
+  workspaceClient = new Client({ name: 'workspace-evidence-validation', version: '1.0.0' });
+  await workspaceClient.connect(
+    new StdioClientTransport({
+      command: process.execPath,
+      args: ['dist/apps/cli/src/index.js', 'mcp', '--data', dataDir],
+      cwd: process.cwd(),
+      stderr: 'pipe',
+    }),
+  );
+  const summary = await workspaceClient.callTool({
+    name: 'get_verification',
+    arguments: { runId: workspaceEvidence.runId },
+  });
+  assert.ok(!summary.isError);
+  const observed = JSON.parse(summary.content[0].text);
+  assert.equal(observed.planHash, workspaceEvidence.planHash);
+  assert.equal(observed.candidateHash, workspaceEvidence.candidateHash);
+  assert.equal(observed.currentWorkspaceStale, false);
+  assert.deepEqual(observed.workspace.members, workspaceEvidence.workspace.members);
+  for (const section of ['workspace', 'links']) {
+    const result = await workspaceClient.callTool({
+      name: 'get_evidence',
+      arguments: {
+        runId: workspaceEvidence.runId,
+        section,
+        offset: 0,
+        limit: 2,
+      },
+    });
+    assert.ok(!result.isError);
+    const page = JSON.parse(result.content[0].text);
+    assert.ok(page.total >= 3);
+    assert.equal(page.items.length, 2);
+  }
+  await writeFile(
+    'artifacts/integration-validation/workspace-evidence.json',
+    JSON.stringify(workspaceEvidence, null, 2),
+  );
+  checks.push(
+    'Real workspace CLI execution, API and paginated MCP share source/plan/member identity and consumer mutation evidence',
+  );
   const fresh = await api('/api/plans', {
-    projectId: project.projectId,
+    projectId: workspaceProject.projectId,
     baseRef: 'HEAD',
     include: [],
   });
@@ -107,7 +170,11 @@ try {
   assert.equal(record.state, 'canceled');
   assert.notEqual(record.evidence?.verdict, 'pass');
   checks.push('Running cancellation cleans up execution');
-  const p = await api('/api/plans', { projectId: project.projectId, baseRef: 'HEAD', include: [] });
+  const p = await api('/api/plans', {
+    projectId: workspaceProject.projectId,
+    baseRef: 'HEAD',
+    include: [],
+  });
   const interrupted = await api('/api/runs', { planId: p.data.planId });
   for (let i = 0; i < 50; i++) {
     record = (await api('/api/runs/' + interrupted.data.runId)).data;
@@ -138,7 +205,9 @@ try {
     `label=app.proofgate.run=${interrupted.data.runId}`,
   ]);
   assert.equal(remaining.stdout.trim(), '');
-  checks.push('Restart marks interrupted work and cleans only its containers');
+  checks.push(
+    'Workspace cancellation/restart marks incomplete work and cleans only its containers',
+  );
   await writeFile(
     'artifacts/integration-validation/report.json',
     JSON.stringify({ status: 'passed', checks, dataDir, evidenceRunId: evidence.runId }, null, 2),
@@ -149,6 +218,7 @@ try {
     JSON.stringify({ status: 'passed', checks: checks.length, evidenceRunId: evidence.runId }),
   );
 } finally {
+  await workspaceClient?.close();
   worker?.kill('SIGTERM');
   server.kill('SIGTERM');
   await new Promise((r) => setTimeout(r, 500));

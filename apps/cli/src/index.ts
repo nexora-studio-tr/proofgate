@@ -10,9 +10,10 @@ import { policySchema, VERSION } from '../../../packages/contracts/src/index.js'
 import { digest, htmlReport, changedFiles } from '../../../packages/core/src/index.js';
 import { repositoryRoot } from '../../../packages/snapshots/src/index.js';
 import { examplePair } from '../../../packages/core/src/examples.js';
+import { workspaceExample } from '../../../packages/core/src/workspace-example.js';
 import { command, docker } from '../../../packages/runner/src/process.js';
 import { imageId } from '../../../packages/runner/src/index.js';
-import { prepareDependencies } from '../../../packages/runner/src/dependencies.js';
+import { prepareDependencies, dependencyKey } from '../../../packages/runner/src/dependencies.js';
 import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { createServer } from '../../server/src/index.js';
 import { startMcp } from '../../mcp/src/index.js';
@@ -34,6 +35,7 @@ const { values, positionals } = parseArgs({
     demo: { type: 'boolean' },
     'team-mode': { type: 'boolean' },
     live: { type: 'boolean' },
+    workspace: { type: 'boolean' },
   },
 });
 const action = positionals[0] ?? 'help',
@@ -42,7 +44,7 @@ const root = fileURLToPath(new URL('../../../../', import.meta.url));
 async function main() {
   if (action === 'help') {
     console.log(
-      `ProofGate ${VERSION}\n\n  inspect <repo> --base <ref> Read-only manifest workspace impact\n  doctor --build             Build and pin the isolated runner\n  example                    Create and register the editable sample\n  register <repo> --policy <file> [--team <id>]\n  serve [--team-mode]         Start UI/API and one supervisor\n  demo                       Start a read-only synthetic demo\n  verify --project <id> --base <ref>\n  mcp                        Connect a local MCP host to a running server\n  recovery --email <email>    Issue a single-use local operator recovery link\n\nAll commands accept --data <directory>. Default UI: http://127.0.0.1:4327`,
+      `ProofGate ${VERSION}\n\n  inspect <repo> --base <ref> Read-only manifest workspace impact\n  doctor --build             Build and pin the isolated runner\n  example [--workspace]      Create and register an editable sample\n  register <repo> --policy <file> [--team <id>]\n  serve [--team-mode]         Start UI/API and one supervisor\n  demo                       Start a read-only synthetic demo\n  verify --project <id> --base <ref>\n  mcp                        Connect a local MCP host to a running server\n  recovery --email <email>    Issue a single-use local operator recovery link\n\nAll commands accept --data <directory>. Default UI: http://127.0.0.1:4327`,
     );
     return;
   }
@@ -92,7 +94,7 @@ async function main() {
       store.run(
         'INSERT INTO project_images VALUES(?,?,?,?) ON CONFLICT DO UPDATE SET image=excluded.image',
         values.project,
-        digest(snapshot.files['package-lock.json'] ?? ''),
+        dependencyKey(snapshot),
         image,
         projectImage,
       );
@@ -108,19 +110,21 @@ async function main() {
     if (action === 'example') {
       repo = path.join(dataDir, 'examples', randomUUID());
       await mkdir(repo, { recursive: true });
-      const p = examplePair();
+      const p = values.workspace ? workspaceExample() : examplePair();
       for (const [name, source] of Object.entries(p.base.files)) {
         await mkdir(path.dirname(path.join(repo, name)), { recursive: true });
         await writeFile(path.join(repo, name), source);
       }
       for (const args of [
-        ['init', '--initial-branch=main'],
-        ['add', '--', 'package.json', 'package-lock.json', 'src/access.ts', 'tests/access.test.ts'],
+        ['init', '--template=', '--initial-branch=main'],
+        ['add', '--', ...Object.keys(p.base.files)],
         [
           '-c',
           'user.name=ProofGate Example',
           '-c',
           'user.email=example@proofgate.local',
+          '-c',
+          'core.hooksPath=',
           'commit',
           '-m',
           'Original permissions',
@@ -143,7 +147,12 @@ async function main() {
     const canonical = await repositoryRoot(path.resolve(repo!));
     const id = store.addProject(
       team,
-      values.name ?? (action === 'example' ? 'Access control' : path.basename(canonical)),
+      values.name ??
+        (action === 'example'
+          ? values.workspace
+            ? 'Workspace access control'
+            : 'Access control'
+          : path.basename(canonical)),
       canonical,
       policy,
     );
