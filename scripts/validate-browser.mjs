@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -64,6 +64,30 @@ try {
   await page.locator('.history-row').first().click();
   await page.getByRole('heading', { name: 'Politika geçti', exact: true }).waitFor();
   checks.push('Run history navigation');
+  const records = await (await fetch(origin + '/api/runs')).json();
+  const workspace = records.find((r) => r.evidence?.schemaVersion === 2);
+  assert.ok(workspace, 'Recorded workspace evidence is missing');
+  await page.getByRole('button', { name: /Geçmiş denemeler/ }).click();
+  await page
+    .locator('.history-row')
+    .filter({ hasText: workspace.id.slice(0, 8) })
+    .click();
+  const scope = page.getByRole('region', { name: 'Workspace doğrulama kapsamı', exact: true });
+  await expect(scope).toContainText(workspace.evidence.planHash);
+  await expect(scope).toContainText('Doğrulanmadı: packages/unrelated');
+  await expect(scope).toContainText('@fixture/api');
+  assert.equal(await scope.locator('tbody tr').count(), 3);
+  await expect(scope.getByText('Geçti', { exact: true }).first()).toBeInViewport();
+  await page.screenshot({ path: output + '/workspace-mobile-tr.png', fullPage: true });
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+  const report = await (await fetch(origin + '/api/runs/' + workspace.id + '/report')).text();
+  assert.ok(report.includes(workspace.evidence.planHash));
+  assert.ok(report.includes('Not verified: packages/unrelated'));
+  assert.equal((await fetch(origin + '/api/runs/' + workspace.id + '/change')).status, 200);
+  assert.equal((await fetch(origin + '/api/runs/not-a-bundled-record')).status, 404);
+  checks.push(
+    'Real recorded v2 scope, unverified member and plan identity agree across mobile UI and HTML export',
+  );
   assert.deepEqual(errors, []);
   checks.push('No browser errors');
   await writeFile(

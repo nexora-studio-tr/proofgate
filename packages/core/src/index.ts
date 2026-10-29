@@ -231,5 +231,18 @@ export function escapeHtml(s: unknown): string {
   );
 }
 export function htmlReport(e: Evidence): string {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>ProofGate evidence</title><style>body{font:16px system-ui;max-width:1000px;margin:48px auto;padding:24px;color:#17251f;background:#f4f4ef}table{border-collapse:collapse;width:100%}td,th{text-align:left;border-bottom:1px solid #ccd4cc;padding:12px}code{overflow-wrap:anywhere}h1{font-size:44px}small{color:#536259}</style><h1>ProofGate / ${escapeHtml(e.verdict)}</h1><p>${e.simulated ? 'Bundled synthetic example; no live project was executed.' : 'Observed execution evidence; applies only to the recorded scope.'}</p><p>Candidate <code>${escapeHtml(e.candidateHash)}</code></p><p>Image <code>${escapeHtml(e.image)}</code></p><p>${e.trials.length} trials · ${e.mutations.length} mutations · ${Math.round(e.elapsedMs / 1000)} seconds</p><table><tr><th>Code</th><th>Observation</th></tr>${e.findings.map((f) => `<tr><td>${escapeHtml(f.code)}</td><td>${escapeHtml(f.detail)}</td></tr>`).join('')}</table><h2>Test observations</h2><table><tr><th>Trial</th><th>Test</th><th>Status</th></tr>${e.trials.flatMap((t) => t.tests.map((x) => `<tr><td>${t.variant}${t.index}</td><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.status)}</td></tr>`)).join('')}</table><p><small>Not a general correctness or security certificate. Evidence schema ${e.schemaVersion}, tool ${escapeHtml(e.toolVersion)}.</small></p></html>`;
+  const workspace = e.workspace
+    ? `<h2>Workspace scope</h2>
+<p>Frozen plan <code>${escapeHtml(e.planHash)}</code></p>
+<p>One shared job budget. Candidate counts cover all three H trials; a package cannot pass when the shared gate is incomplete.</p>
+<table><tr><th>Package</th><th>Selection reason</th><th>Result</th><th>Candidate tests</th></tr>${e.workspace.selected
+        .map((member) => {
+          const result = e.workspace!.members.find((m) => m.path === member.path);
+          return `<tr><td>${escapeHtml(member.name)}<br><code>${escapeHtml(member.path)}</code></td><td>${escapeHtml(member.reason)}<br>${escapeHtml(member.via.join(' → '))}</td><td>${escapeHtml(result?.status ?? 'inconclusive')}</td><td>${result?.observed ?? 0}/${result?.required ?? 0}</td></tr>`;
+        })
+        .join(
+          '',
+        )}</table><p>Not verified: ${e.workspace.unselected.map(escapeHtml).join(', ') || 'none'}</p>`
+    : '';
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>ProofGate evidence</title><style>body{font:16px system-ui;max-width:1000px;margin:48px auto;padding:24px;color:#17251f;background:#f4f4ef}table{border-collapse:collapse;width:100%}td,th{text-align:left;border-bottom:1px solid #ccd4cc;padding:12px;overflow-wrap:anywhere}code{overflow-wrap:anywhere}h1{font-size:44px}small{color:#536259}</style><h1>ProofGate / ${escapeHtml(e.verdict)}</h1><p>${e.simulated ? 'Bundled synthetic example; no live project was executed.' : 'Observed execution evidence; applies only to the recorded scope.'}</p><p>Candidate <code>${escapeHtml(e.candidateHash)}</code></p><p>Image <code>${escapeHtml(e.image)}</code></p><p>${e.trials.length} trials · ${e.mutations.length} mutations · ${Math.round(e.elapsedMs / 1000)} seconds</p>${workspace}<table><tr><th>Code</th><th>Observation</th></tr>${e.findings.map((f) => `<tr><td>${escapeHtml(f.code)}</td><td>${escapeHtml(f.detail)}</td></tr>`).join('')}</table><h2>Test observations</h2><table><tr><th>Trial</th><th>Test</th><th>Status</th></tr>${e.trials.flatMap((t) => t.tests.map((x) => `<tr><td>${t.variant}${t.index}</td><td>${escapeHtml(x.name)}</td><td>${escapeHtml(x.status)}</td></tr>`)).join('')}</table><p><small>Not a general correctness or security certificate. Evidence schema ${e.schemaVersion}, tool ${escapeHtml(e.toolVersion)}.</small></p></html>`;
 }

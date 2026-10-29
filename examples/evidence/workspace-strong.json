@@ -1,0 +1,764 @@
+{
+  "schemaVersion": 2,
+  "toolVersion": "0.1.0-alpha.2",
+  "runId": "b5e54183-78d6-48cc-8821-e436b30beca1",
+  "projectId": "146a5b43-b02e-4df0-acb8-5480e817409b",
+  "startedAt": "2026-10-29T12:04:14.640Z",
+  "finishedAt": "2026-10-29T12:04:22.255Z",
+  "baseHash": "1e1253595cc28eea5671028ec3e9c7fa9bb54a97a818452b54a6f6759b1a58e5",
+  "candidateHash": "c6e9bb0c81d7b530b0ea6c3350a70876c11a4d211477de43976661aa811436f1",
+  "policyHash": "a3d2016b77fedd8bef01c8b80e051e73b4930a76e36d4d13b36269a0bee10dfa",
+  "lockHash": "e1352f85f294c01d3f9d23d1285c2eb7cd81cd10fb520893accb1da4c9118777",
+  "image": "sha256:4c8505c37eee5496d918410f9e02ad085a194c0945e6a5fc6dc9854a30e83940",
+  "scope": [
+    "apps/api/tests/api.test.ts",
+    "packages/access/src/access.ts"
+  ],
+  "state": "completed",
+  "verdict": "pass",
+  "findings": [],
+  "trials": [
+    {
+      "variant": "B",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 695
+    },
+    {
+      "variant": "C",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 760
+    },
+    {
+      "variant": "H",
+      "index": 1,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 732
+    },
+    {
+      "variant": "C",
+      "index": 2,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 702
+    },
+    {
+      "variant": "H",
+      "index": 2,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 709
+    },
+    {
+      "variant": "C",
+      "index": 3,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "failed",
+          "message": "expected true to be false // Object.is equality",
+          "assertion": true,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 678
+    },
+    {
+      "variant": "H",
+      "index": 3,
+      "status": "complete",
+      "tests": [
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/api",
+          "file": "apps/api/tests/api.test.ts",
+          "fullName": "locked admin denied"
+        },
+        {
+          "name": "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "apps/audit",
+          "file": "apps/audit/tests/audit.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::admin allowed",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "admin allowed"
+        },
+        {
+          "name": "packages/access::packages/access/tests/access.test.ts::viewer denied",
+          "status": "passed",
+          "message": "",
+          "assertion": false,
+          "packagePath": "packages/access",
+          "file": "packages/access/tests/access.test.ts",
+          "fullName": "viewer denied"
+        }
+      ],
+      "errors": [],
+      "elapsedMs": 658
+    }
+  ],
+  "mutations": [
+    {
+      "id": "0",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "BooleanLiteral",
+      "replacement": "true",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "packages/access::packages/access/tests/access.test.ts::admin allowed"
+      ]
+    },
+    {
+      "id": "1",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "BlockStatement",
+      "replacement": "{}",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    },
+    {
+      "id": "2",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "true",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    },
+    {
+      "id": "3",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "false",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::locked admin denied"
+      ]
+    },
+    {
+      "id": "4",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "BooleanLiteral",
+      "replacement": "true",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::locked admin denied"
+      ]
+    },
+    {
+      "id": "5",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "true",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "packages/access::packages/access/tests/access.test.ts::viewer denied"
+      ]
+    },
+    {
+      "id": "6",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "ConditionalExpression",
+      "replacement": "false",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    },
+    {
+      "id": "7",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "EqualityOperator",
+      "replacement": "role !== 'admin'",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    },
+    {
+      "id": "8",
+      "file": "packages/access/src/access.ts",
+      "line": 1,
+      "mutator": "StringLiteral",
+      "replacement": "\"\"",
+      "status": "detected",
+      "engineStatus": "Killed",
+      "killedBy": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    }
+  ],
+  "mutationScope": {
+    "selected": 9,
+    "attempted": 9,
+    "omitted": 0,
+    "complete": true,
+    "locations": [
+      "packages/access/src/access.ts:1-1"
+    ]
+  },
+  "elapsedMs": 7615,
+  "budget": {
+    "stageMs": 120000,
+    "totalMs": 600000,
+    "mutants": 25
+  },
+  "simulated": false,
+  "planHash": "b32e92728c8b760e1d7b32c2959a485fc9db584776506299a9cac3305041ad54",
+  "workspace": {
+    "profile": "npm-workspace-node-v1",
+    "impactHash": "62a6d0abf496920354dc0a2c4347275b805ed4bc6a1c7fbedd0b03fc8b9b6b3c",
+    "selected": [
+      {
+        "path": "apps/api",
+        "name": "@fixture/api",
+        "reason": "direct",
+        "via": [
+          "apps/api"
+        ]
+      },
+      {
+        "path": "apps/audit",
+        "name": "@fixture/audit",
+        "reason": "dependent",
+        "via": [
+          "apps/api",
+          "apps/audit"
+        ]
+      },
+      {
+        "path": "packages/access",
+        "name": "@fixture/access",
+        "reason": "direct",
+        "via": [
+          "packages/access"
+        ]
+      }
+    ],
+    "unselected": [
+      "packages/unrelated"
+    ],
+    "links": [
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/project",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/project/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/project/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/project/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/project/packages/unrelated"
+          }
+        ]
+      },
+      {
+        "root": "/scratch/stryker/sandbox-LEfbUC",
+        "links": [
+          {
+            "name": "@fixture/access",
+            "target": "/scratch/stryker/sandbox-LEfbUC/packages/access"
+          },
+          {
+            "name": "@fixture/api",
+            "target": "/scratch/stryker/sandbox-LEfbUC/apps/api"
+          },
+          {
+            "name": "@fixture/audit",
+            "target": "/scratch/stryker/sandbox-LEfbUC/apps/audit"
+          },
+          {
+            "name": "@fixture/unrelated",
+            "target": "/scratch/stryker/sandbox-LEfbUC/packages/unrelated"
+          }
+        ]
+      }
+    ],
+    "members": [
+      {
+        "path": "packages/access",
+        "required": 2,
+        "observed": 2,
+        "status": "pass"
+      },
+      {
+        "path": "apps/api",
+        "required": 2,
+        "observed": 2,
+        "status": "pass"
+      },
+      {
+        "path": "apps/audit",
+        "required": 1,
+        "observed": 1,
+        "status": "pass"
+      }
+    ],
+    "npmVersion": "11.12.1"
+  }
+}

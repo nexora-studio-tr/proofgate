@@ -2,7 +2,7 @@
 
 **Değişiklik ve kanıtı.** Claude Code, Codex veya editörünüzle yazdığınız kod için eski/yeni test karşılaştırması ve kontrollü hata denemeleri.
 
-**[Alpha.2](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.2)**, CLI/MCP ve iki dilli panelden [paket etki ön incelemesi](docs/WORKSPACE-IMPACT.md) ekler. Değişen paketleri, dolaylı bağımlıları ve belirsizlikleri gör. Doğrulama çalıştırması hâlâ tek npm paketini destekler.
+**[Alpha.3](https://github.com/nexora-studio-tr/proofgate/releases/tag/v0.1.0-alpha.3)**, [kontrollü npm workspace doğrulaması](docs/WORKSPACE-EXECUTION.tr.md) ekler: en fazla beş paket için tek sabit plan, yedi önce/sonra denemesi ve ortak koddaki kontrollü hatayı hangi tüketici testinin yakaladığını gösteren mutasyon kanıtı.
 
 [Canlı demo](https://proofgate-demo.onrender.com/) · [English](README.md) · [Kurulum](docs/SETUP.tr.md) · [Mimari](docs/ARCHITECTURE.md) · [Güvenlik](SECURITY.md)
 
@@ -68,6 +68,7 @@ npm run check
 npm run test:docker -- --all
 npm run test:isolation
 npm run test:integration
+npm run test:workspace-execution
 npm run test:browser -- --start
 npm run test:team-browser
 npm run release:pack
@@ -76,6 +77,8 @@ npm run test:release
 
 Tarayıcı testleri için `npx playwright install chromium` gerekir. Paketleme yalnızca izin verilen ProofGate kaynaklarını alır. Oturumlar, çalışma verileri, anahtarlar, kurulu bağımlılıklar ve diğer projeler dışarıda kalır. [Doğrulama durumu](docs/STATUS.md).
 
-İlk sürüm tek npm paketi, TypeScript/JavaScript ve çevrimdışı Vitest Node testlerini destekler. Kaynak sınırı 500 dosya, dosya başına 512 KiB ve toplam 4 MiB'dir. Tarayıcı/E2E adaptörleri, özel paket depoları, monorepo, SMTP, SSO/MFA ve otomatik düzeltme kapsam dışıdır. Docker ortak çekirdek kullanır; ürün keyfi düşmanca kod çalıştıran bir servis değildir.
+Tek npm paketi veya incelenmiş `npm-workspace-node-v1` profili, TypeScript/JavaScript ve çevrimdışı Vitest Node testleri desteklenir. Workspace için bildirimler, lockfile ve bağımlılık topolojisi değişmemeli; dış bağımlılıklar kökte kurulmalı ve en fazla beş paket seçilmelidir. Kaynak sınırı 500 dosya, dosya başına 512 KiB ve toplam 4 MiB'dir. pnpm/Yarn, derleme betikleri, keyfi test yapılandırması, tarayıcı/E2E adaptörleri, özel paket depoları, SMTP, SSO/MFA ve otomatik düzeltme kapsam dışıdır. Docker ortak çekirdek kullanır; ürün keyfi düşmanca kod çalıştıran bir servis değildir.
+
+Workspace örneği: `node dist/apps/cli/src/index.js example --workspace` komutunun verdiği proje ID'sini kullanarak `doctor --project PROJECT_ID`, ardından `verify --project PROJECT_ID --base HEAD` çalıştır. Yerel sunucuyu açık bırak. [Türkçe politika ve kullanım](docs/WORKSPACE-EXECUTION.tr.md). Demodaki geçmiş denemelerden gerçek workspace kaydını seçebilirsin; bu kayıt ziyaretçinin kodunun doğrulandığı anlamına gelmez.
 
 ReproPack ayrı projedir. Ticari Discord botunun kaynakları bu pakete dahil değildir.

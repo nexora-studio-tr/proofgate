@@ -2,13 +2,13 @@
 
 [Türkçe](WORKSPACE-EXECUTION-RFC.tr.md) · [Current preflight](WORKSPACE-IMPACT.md) · [Existing architecture](ARCHITECTURE.md)
 
-**Status: proposed, awaiting architecture approval. No execution support implemented.** Prepared 2026-10-29 against local source commit `197ae3a72c1a4739d39f0f0d01a8d1f793171449`, version `0.1.0-alpha.2`. VoiceBridge model conversion is deferred, not accepted as a quality fix.
+**Status: approved and implemented for alpha.3.** Architecture approval received on 2026-10-29. See [operator guide](WORKSPACE-EXECUTION.md) and [actual container proof](../examples/evidence/WORKSPACE-PROVENANCE.md). Original design context: Prepared 2026-10-29 against local source commit `197ae3a72c1a4739d39f0f0d01a8d1f793171449`, version `0.1.0-alpha.2`. VoiceBridge model conversion is deferred, not accepted as a quality fix.
 
 ## Decision and product result
 
 Extend the existing read-only workspace graph into an explicit verification plan for a bounded npm/Vitest monorepo. Show which changed packages and consumers were tested, why they were selected, whether the regression fails on the original, and whether consumer tests detect mutations in shared code. A green result for one member must not hide missing evidence for another.
 
-The existing service rejects workspace execution in `apps/server/src/service.ts`. `packages/runner/src/dependencies.ts` rejects workspace manifests and every linked lock entry. The sandbox currently links whole dependency directories to its immutable dependency image, and the reporter identifies tests only by full name. All four boundaries need deliberate changes; removing the service rejection alone is not the feature.
+Before this extension the service rejected workspace execution in `apps/server/src/service.ts`. `packages/runner/src/dependencies.ts` rejects workspace manifests and every linked lock entry. The sandbox currently links whole dependency directories to its immutable dependency image, and the reporter identifies tests only by full name. All four boundaries need deliberate changes; removing the service rejection alone is not the feature.
 
 ## First supported profile
 
@@ -26,7 +26,7 @@ Initial execution permits implementation/test edits inside declared members. Roo
 
 No pnpm/Yarn adapter, browser/E2E tests, private registry, lifecycle/build scripts, arbitrary candidate configuration, automatic fixes or cross-product integration. Members must expose source usable by the reviewed Node test profile without a build stage. External dependencies must remain public-registry and integrity pinned. Accept generated npm workspace links only when they exactly match captured member names/paths; no arbitrary `file:` or outside-root links. The initial dependency layout is root-hoisted; member-specific external dependency trees are explicitly unsupported.
 
-Use array-form workspace declarations and the preflight's supported literal/whole-component `*`/`**` patterns. The initial execution profile rejects `workspace:` dependency tokens and uses real npm-generated lock/link fixtures with ordinary local version references. The inspector's broader parsing is not installation support. Record the exact npm version from the immutable runner image in the plan; do not upgrade npm during preparation. This remains a registered-project container workflow, not unrestricted hostile-code hosting.
+Use array-form workspace declarations and the preflight's supported literal/whole-component `*`/`**` patterns. The initial execution profile rejects `workspace:` dependency tokens and uses real npm-generated lock/link fixtures with ordinary local version references. The inspector's broader parsing is not installation support. Record the exact npm version in evidence and bind its immutable image in the plan; do not upgrade npm during preparation. This remains a registered-project container workflow, not unrestricted hostile-code hosting.
 
 ## Frozen plan and policy
 
@@ -71,7 +71,7 @@ The UI extends the existing review flow using its Radix primitives: selection re
 
 Release acceptance must demonstrate in actual containers: strong fix; weak test passing on C/H; consumer-detected shared mutation; zero/duplicate/missing tests; deleted/cyclic/unknown topology; changed manifests/locks/config; stale plan/policy/image; unsafe local links; import/setup crash; mutation cap; timeout/cancel; restart and role revocation; cross-team artifact denial; one global queue; CLI/MCP/UI identity agreement; and fresh-source Windows/Linux checks. Preserve all current single-package gates and synthetic evidence.
 
-Delivery order after approval: (1) v2 contracts/pure planner; (2) dependency/link and cross-package mutation spike; (3) seven-trial execution/global evaluation; (4) CLI/MCP/UI, docs and recorded read-only demo; (5) full CI, source installation and an alpha.3 release only when the gates pass. Existing alpha.2 assets are immutable. There is no schedule or quality guarantee. This RFC contains no implementation or new execution evidence.
+Delivery order after approval: (1) v2 contracts/pure planner; (2) dependency/link and cross-package mutation spike; (3) seven-trial execution/global evaluation; (4) CLI/MCP/UI, docs and recorded read-only demo; (5) full CI, source installation and an alpha.3 release only when the gates pass. Existing alpha.2 assets are immutable. There is no schedule or quality guarantee. The design is implemented; actual observations and remaining limits are recorded in the linked validation documents.
 
 ## Compatibility sources
 

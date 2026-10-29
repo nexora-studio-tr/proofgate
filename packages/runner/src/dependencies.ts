@@ -36,13 +36,15 @@ export function workspaceInstall(s: Snapshot) {
     if (
       typeof manifest.name !== 'string' ||
       manifest.name.length > 214 ||
-      !/^(@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(manifest.name) ||
+      !/^(@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/.test(manifest.name) ||
       ['vitest', 'vite'].includes(manifest.name) ||
       /^@(?:vitest|stryker-mutator)\//.test(manifest.name)
     )
       throw Error('WORKSPACE_PACKAGE_NAME_UNSUPPORTED');
     if (typeof manifest.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(manifest.version))
       throw Error('WORKSPACE_VERSION_UNSUPPORTED');
+  }
+  for (const manifest of [pkg, ...manifests.values()]) {
     for (const section of [
       'dependencies',
       'devDependencies',
@@ -87,10 +89,13 @@ export function validateDependencies(s: Snapshot) {
     if (workspace?.links.has(key)) continue;
     if (workspace && !key.startsWith('node_modules/'))
       throw Error('WORKSPACE_NESTED_DEPENDENCIES_UNSUPPORTED');
+    const resolved = value.resolved ? new URL(value.resolved) : undefined;
     if (
       value.link ||
-      !value.resolved ||
-      new URL(value.resolved).origin !== 'https://registry.npmjs.org' ||
+      !resolved ||
+      resolved.origin !== 'https://registry.npmjs.org' ||
+      resolved.username ||
+      resolved.password ||
       !/^sha512-[A-Za-z0-9+/=]+$/.test(value.integrity ?? '')
     )
       throw new Error('Only integrity-pinned public npm registry dependencies are supported');

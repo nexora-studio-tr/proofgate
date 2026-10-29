@@ -87,7 +87,7 @@ const copy = {
     mode: 'Recorded scope only',
     error: 'Request failed',
     workspaceBlocked:
-      'Workspace inspection is available; verification execution supports one npm package.',
+      'Workspace inspection is available. Register a reviewed workspace policy v2 before planning execution.',
     waiting: 'Waiting for reference evidence',
     hash: 'Candidate snapshot',
   },
@@ -159,7 +159,7 @@ const copy = {
     mode: 'Yalnızca kayıtlı kapsam',
     error: 'İstek başarısız',
     workspaceBlocked:
-      'Paket ön incelemesi kullanılabilir; doğrulama çalıştırması tek npm paketini destekler.',
+      'Paket ön incelemesi kullanılabilir. Çalıştırma planı için incelenmiş workspace v2 politikası kaydedin.',
     waiting: 'Örnek kanıt bekleniyor',
     hash: 'Aday kaynak görüntüsü',
   },
@@ -435,7 +435,13 @@ function App() {
           <span>
             {t.workspace}
             <span className="separator">/</span>
-            <strong>{projects.find((p) => p.id === run?.project_id)?.name ?? 'ProofGate'}</strong>
+            <strong>
+              {demo && e?.workspace
+                ? lang === 'en'
+                  ? 'Workspace access / example'
+                  : 'Workspace izinleri / örnek'
+                : (projects.find((p) => p.id === run?.project_id)?.name ?? 'ProofGate')}
+            </strong>
           </span>
           <div>
             {language}
@@ -504,6 +510,15 @@ function App() {
                                 : 'inconclusive'
                           ]
                         : r.stage}
+                      {r.evidence && (
+                        <small>
+                          {r.evidence.workspace
+                            ? `${r.evidence.workspace.selected.length} ${lang === 'en' ? 'workspace packages' : 'workspace paketi'}`
+                            : lang === 'en'
+                              ? 'Single package'
+                              : 'Tek paket'}
+                        </small>
+                      )}
                     </span>
                     <time>{new Date(r.created).toLocaleString(lang)}</time>
                     <span>↗</span>

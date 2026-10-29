@@ -37,7 +37,7 @@ describe('bounded manifest workspace impact', () => {
     const impact = inspect(base, head);
     expect(impact.status).toBe('complete');
     expect(impact.kind).toBe('npm-workspaces');
-    expect(impact.executionSupport).toBe('single-package-only');
+    expect(impact.executionSupport).toBe('reviewed-policy-required');
     expect(impact.baseHash).toBe(snapshot(base).hash);
     expect(impact.candidateHash).toBe(snapshot(head).hash);
     expect(impact.affected.map((p) => p.path)).toEqual([

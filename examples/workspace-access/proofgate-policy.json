@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "profile": "npm-workspace-node-v1",
+  "members": [
+    {
+      "path": "packages/access",
+      "baselineTests": [
+        "packages/access::packages/access/tests/access.test.ts::admin allowed",
+        "packages/access::packages/access/tests/access.test.ts::viewer denied"
+      ]
+    },
+    {
+      "path": "apps/api",
+      "baselineTests": [
+        "apps/api::apps/api/tests/api.test.ts::admin allowed"
+      ]
+    },
+    {
+      "path": "apps/audit",
+      "baselineTests": [
+        "apps/audit::apps/audit/tests/audit.test.ts::admin allowed"
+      ]
+    }
+  ],
+  "testFiles": [
+    "packages/access/tests/access.test.ts",
+    "apps/api/tests/api.test.ts",
+    "apps/audit/tests/audit.test.ts"
+  ],
+  "requiredTests": [
+    "packages/access::packages/access/tests/access.test.ts::admin allowed",
+    "apps/api::apps/api/tests/api.test.ts::admin allowed",
+    "apps/audit::apps/audit/tests/audit.test.ts::admin allowed",
+    "packages/access::packages/access/tests/access.test.ts::viewer denied",
+    "apps/api::apps/api/tests/api.test.ts::locked admin denied"
+  ],
+  "regressionTest": "apps/api::apps/api/tests/api.test.ts::locked admin denied",
+  "expectedFailure": "expected true to be false",
+  "productionFiles": [
+    "packages/access/src/access.ts"
+  ],
+  "budget": {
+    "stageMs": 120000,
+    "totalMs": 600000,
+    "mutants": 25
+  }
+}

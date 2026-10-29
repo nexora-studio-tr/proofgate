@@ -8,6 +8,8 @@ import { createServer } from '../dist/apps/server/src/index.js';
 import { examplePair } from '../dist/packages/core/src/examples.js';
 import { command } from '../dist/packages/runner/src/process.js';
 import { workspaceFixture } from '../dist/tests/workspace-fixture.js';
+import { workspaceExample } from '../dist/packages/core/src/workspace-example.js';
+import { dependencyKey } from '../dist/packages/runner/src/dependencies.js';
 
 const out = path.resolve('artifacts/workspace-validation');
 await mkdir(out, { recursive: true });
@@ -138,9 +140,7 @@ try {
   await page.screenshot({ path: path.join(out, 'workspace-impact-tr-mobile.png'), fullPage: true });
   checks.push('Changing the reference clears old results; Turkish preflight fits a 390px dialog');
   await page.getByRole('button', { name: 'Doğrulama planını sabitle', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText(
-    'doğrulama çalıştırması tek npm paketini destekler',
-  );
+  await expect(page.getByRole('alert')).toContainText('incelenmiş workspace v2 politikası');
   assert.equal(server.store.all('SELECT id FROM plans').length, 0);
   assert.equal(server.store.all('SELECT id FROM jobs').length, 0);
   await assert.rejects(access(path.join(repo, 'EXECUTED')));
@@ -149,6 +149,101 @@ try {
   checks.push(
     'Inspection creates no plans/jobs, executes no manifest script and makes no external browser requests',
   );
+  await page.keyboard.press('Escape');
+  const created = await command(process.execPath, [
+    'dist/apps/cli/src/index.js',
+    'example',
+    '--workspace',
+    '--data',
+    data,
+  ]);
+  assert.equal(created.code, 0, created.stderr);
+  const registered = JSON.parse(created.stdout);
+  const pair = workspaceExample();
+  // Immutable placeholders test planning only. No supervisor or Docker execution runs here.
+  const baseImage = 'sha256:' + 'b'.repeat(64),
+    image = 'sha256:' + 'a'.repeat(64);
+  server.store.setMeta('runner_image', baseImage);
+  server.store.run(
+    'INSERT INTO project_images VALUES(?,?,?,?)',
+    registered.projectId,
+    dependencyKey(pair.head),
+    baseImage,
+    image,
+  );
+  const cliWorkspace = await command(process.execPath, [
+    'dist/apps/cli/src/index.js',
+    'inspect',
+    registered.root,
+    '--base',
+    'HEAD',
+  ]);
+  assert.equal(cliWorkspace.code, 0, cliWorkspace.stderr);
+  assert.equal(JSON.parse(cliWorkspace.stdout).candidateHash, pair.head.hash);
+  const planned = await client.callTool({
+    name: 'plan_verification',
+    arguments: {
+      projectId: registered.projectId,
+      baseRef: 'HEAD',
+      include: [],
+    },
+  });
+  assert.ok(!planned.isError, JSON.stringify(planned));
+  const frozen = JSON.parse(planned.content[0].text);
+  assert.match(frozen.planHash, /^[a-f0-9]{64}$/);
+  assert.equal(frozen.workspace.selected.length, 3);
+  assert.deepEqual(frozen.workspace.unselected, ['packages/unrelated']);
+  assert.equal(frozen.candidateHash, pair.head.hash);
+  await page.reload();
+  await page.getByRole('button', { name: 'Değişikliği doğrula', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Kayıtlı proje', exact: true }).click();
+  await page.getByRole('option', { name: 'Workspace access control', exact: true }).click();
+  await page.getByRole('button', { name: 'Doğrulama planını sabitle', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText(frozen.planHash);
+  await expect(page.getByRole('dialog')).toContainText('packages/unrelated');
+  await expect(
+    page.getByRole('heading', { name: 'Tek plan. Her zorunlu paket.', exact: true }),
+  ).toBeVisible();
+  assert.ok(await page.locator('.dialog').evaluate((el) => el.scrollWidth <= el.clientWidth));
+  await page.screenshot({ path: path.join(out, 'workspace-plan-tr-mobile.png'), fullPage: true });
+  checks.push(
+    'CLI, real stdio MCP and authenticated TR UI bind the same workspace snapshot and frozen plan',
+  );
+  await page.getByLabel('Başlangıç referansı', { exact: true }).fill('HEAD~1');
+  await expect(
+    page.getByRole('heading', { name: 'Tek plan. Her zorunlu paket.', exact: true }),
+  ).toHaveCount(0);
+  await page.getByLabel('Başlangıç referansı', { exact: true }).fill('HEAD');
+  let releasePlan, startedPlan, fulfilledPlan;
+  const planGate = new Promise((resolve) => {
+    releasePlan = resolve;
+  });
+  const planStarted = new Promise((resolve) => {
+    startedPlan = resolve;
+  });
+  const planFulfilled = new Promise((resolve) => {
+    fulfilledPlan = resolve;
+  });
+  await page.route('**/api/plans', async (route) => {
+    const response = await route.fetch();
+    startedPlan();
+    await planGate;
+    await route.fulfill({ response });
+    fulfilledPlan();
+  });
+  await page.getByRole('button', { name: 'Doğrulama planını sabitle', exact: true }).click();
+  await planStarted;
+  await page.getByLabel('Başlangıç referansı', { exact: true }).fill('HEAD~1');
+  releasePlan();
+  await planFulfilled;
+  await page.unroute('**/api/plans');
+  await expect(
+    page.getByRole('heading', { name: 'Tek plan. Her zorunlu paket.', exact: true }),
+  ).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Bu planı çalıştır', exact: true })).toHaveCount(0);
+  assert.equal(server.store.all('SELECT id FROM jobs').length, 0);
+  assert.deepEqual(errors, []);
+  checks.push('Delayed real plan responses cannot restore stale scope or enqueue jobs');
   await writeFile(
     path.join(out, 'report.json'),
     JSON.stringify(

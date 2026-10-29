@@ -6,7 +6,7 @@ import type {
   Finding,
   Evidence,
 } from '../../contracts/src/index.js';
-import { finding } from '../../contracts/src/index.js';
+import { finding, VERSION } from '../../contracts/src/index.js';
 import { changedFiles, digest, stable } from './index.js';
 import { workspaceImpact } from './workspace.js';
 
@@ -89,6 +89,7 @@ export function planDigest(
   return digest(
     stable({
       schemaVersion: policy.schemaVersion,
+      toolVersion: VERSION,
       baseHash: base.hash,
       candidateHash: head.hash,
       policy,

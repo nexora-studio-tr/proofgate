@@ -7,6 +7,7 @@ import { workspaceExample } from '../packages/core/src/workspace-example.js';
 import { dependencyKey } from '../packages/runner/src/dependencies.js';
 import { captureWorking } from '../packages/snapshots/src/index.js';
 import { command } from '../packages/runner/src/process.js';
+import { runWorker } from '../packages/runner/src/worker.js';
 
 test('workspace plans freeze scope and reject source/policy/image/payload drift before enqueue', async () => {
   const parent = await mkdtemp(path.join(os.tmpdir(), 'proofgate-ws-run-'));
@@ -106,6 +107,29 @@ test('workspace plans freeze scope and reject source/policy/image/payload drift 
       'PLAN_INTEGRITY',
     );
     expect(store.all('SELECT id FROM jobs')).toEqual([]);
+    const queuedPlan = await plan();
+    const queued = await post('/api/runs', { planId: queuedPlan.planId });
+    expect(queued.statusCode, queued.body).toBe(200);
+    await writeFile(path.join(repo, source), original + '// edited while queued\n');
+    const controller = new AbortController();
+    const worker = runWorker(path.join(parent, 'data'), controller.signal);
+    try {
+      const deadline = Date.now() + 10000;
+      let job;
+      do {
+        job = store.get<{ state: string; stage: string }>(
+          'SELECT state,stage FROM jobs WHERE id=?',
+          queued.json().runId,
+        );
+        if (job?.state === 'interrupted') break;
+        await new Promise((resolve) => setTimeout(resolve, 30));
+      } while (Date.now() < deadline);
+      expect(job?.state).toBe('interrupted');
+      expect(job?.stage).toContain('STALE_PLAN');
+    } finally {
+      controller.abort();
+      await worker;
+    }
   } finally {
     await service?.app.close();
     if (

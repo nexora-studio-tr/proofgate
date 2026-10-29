@@ -63,6 +63,7 @@ jobs:
             artifacts/docker-validation/*.json
             artifacts/isolation-validation/report.json
             artifacts/integration-validation/report.json
+            artifacts/integration-validation/workspace-evidence.json
             artifacts/mcp-validation/report.json
             artifacts/deployment-validation/report.json
             artifacts/workspace-execution/*.json

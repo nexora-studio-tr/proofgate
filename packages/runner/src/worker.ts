@@ -3,7 +3,7 @@ import path from 'node:path';
 import { Store, type Job, type Project } from '../../storage/src/index.js';
 import { verify } from './index.js';
 import { policySchema } from '../../contracts/src/index.js';
-import { snapshot } from '../../snapshots/src/index.js';
+import { snapshot, captureWorking } from '../../snapshots/src/index.js';
 import { policyDigest } from '../../core/src/index.js';
 import { docker } from './process.js';
 import { dependencyKey } from './dependencies.js';
@@ -130,6 +130,8 @@ export async function runWorker(dataDir: string, stop: AbortSignal) {
           head = snapshot(p.head.files);
         if (base.hash !== p.base.hash || head.hash !== p.head.hash)
           throw new Error('PLAN_INTEGRITY');
+        if ((await captureWorking(project.root, p.include)).hash !== head.hash)
+          throw new Error('STALE_PLAN');
         if (p.planHash !== planDigest(base, head, policy, p.baseImage, p.image))
           throw Error('PLAN_INTEGRITY');
         const e = await verify({

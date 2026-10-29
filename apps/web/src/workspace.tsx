@@ -187,8 +187,8 @@ export function WorkspacePreflight({
           </p>
           <p>
             {t(
-              'Inspection is not verification evidence. Execution still supports one npm package.',
-              'Ön inceleme doğrulama kanıtı değildir. Çalıştırma hâlâ tek npm paketini destekler.',
+              'Inspection is not verification evidence. Workspace execution requires a reviewed v2 policy and an eligible frozen plan.',
+              'Ön inceleme doğrulama kanıtı değildir. Workspace çalıştırması, incelenmiş v2 politika ve uygun bir sabit plan gerektirir.',
             )}
           </p>
           <ul>

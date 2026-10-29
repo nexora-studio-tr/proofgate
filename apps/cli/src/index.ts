@@ -44,7 +44,7 @@ const root = fileURLToPath(new URL('../../../../', import.meta.url));
 async function main() {
   if (action === 'help') {
     console.log(
-      `ProofGate ${VERSION}\n\n  inspect <repo> --base <ref> Read-only manifest workspace impact\n  doctor --build             Build and pin the isolated runner\n  example                    Create and register the editable sample\n  register <repo> --policy <file> [--team <id>]\n  serve [--team-mode]         Start UI/API and one supervisor\n  demo                       Start a read-only synthetic demo\n  verify --project <id> --base <ref>\n  mcp                        Connect a local MCP host to a running server\n  recovery --email <email>    Issue a single-use local operator recovery link\n\nAll commands accept --data <directory>. Default UI: http://127.0.0.1:4327`,
+      `ProofGate ${VERSION}\n\n  inspect <repo> --base <ref> Read-only manifest workspace impact\n  doctor --build             Build and pin the isolated runner\n  example [--workspace]      Create and register an editable sample\n  register <repo> --policy <file> [--team <id>]\n  serve [--team-mode]         Start UI/API and one supervisor\n  demo                       Start a read-only synthetic demo\n  verify --project <id> --base <ref>\n  mcp                        Connect a local MCP host to a running server\n  recovery --email <email>    Issue a single-use local operator recovery link\n\nAll commands accept --data <directory>. Default UI: http://127.0.0.1:4327`,
     );
     return;
   }
@@ -116,13 +116,15 @@ async function main() {
         await writeFile(path.join(repo, name), source);
       }
       for (const args of [
-        ['init', '--initial-branch=main'],
+        ['init', '--template=', '--initial-branch=main'],
         ['add', '--', ...Object.keys(p.base.files)],
         [
           '-c',
           'user.name=ProofGate Example',
           '-c',
           'user.email=example@proofgate.local',
+          '-c',
+          'core.hooksPath=',
           'commit',
           '-m',
           'Original permissions',

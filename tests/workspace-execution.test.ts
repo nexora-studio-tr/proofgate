@@ -148,6 +148,21 @@ test('real npm lock links are allowed only for frozen internal members', () => {
     validateDependencies(snapshot({ ...p.head.files, 'package-lock.json': JSON.stringify(lock) })),
   ).toThrow('WORKSPACE_LOCK_LINK_MISMATCH');
 });
+test('installation rejects unsafe local names and root file protocols before any npm operation', () => {
+  const p = workspaceExample();
+  const root = JSON.parse(p.head.files['package.json']!);
+  root.dependencies = { '@fixture/access': 'file:packages/access' };
+  expect(() =>
+    validateDependencies(snapshot({ ...p.head.files, 'package.json': JSON.stringify(root) })),
+  ).toThrow(/WORKSPACE_/);
+  const manifest = JSON.parse(p.head.files['packages/unrelated/package.json']!);
+  manifest.name = '..';
+  expect(() =>
+    validateDependencies(
+      snapshot({ ...p.head.files, 'packages/unrelated/package.json': JSON.stringify(manifest) }),
+    ),
+  ).toThrow(/WORKSPACE_/);
+});
 test('image cache key and plan identity change with any installation/policy/image input', () => {
   const p = workspaceExample(),
     a = planDigest(p.base, p.head, p.policy, 'base', 'image');

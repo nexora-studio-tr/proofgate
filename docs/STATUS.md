@@ -1,6 +1,22 @@
 # Implementation and validation status
 
-Version: **0.1.0-alpha.2**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+Version: **0.1.0-alpha.3**. Alpha support is intentionally scoped; the architecture is the design baseline, not a substitute for execution evidence.
+
+## Alpha.3 controlled workspace execution — 2026-10-29
+
+Implemented the approved [workspace profile](WORKSPACE-EXECUTION.md): at most five selected npm members, externally reviewed v2 policy, one hash-bound plan, seven B/C/H trials, safe per-variant and Stryker links, namespaced test/mutation evidence, package outcomes and explicit unverified scope. Source edits after enqueueing are rejected before execution. CLI/MCP/UI/HTML share the evidence format; existing v1 single-package support remains.
+
+All four jobs in [implementation checkpoint CI 40870106997](https://github.com/nexora-studio-tr/proofgate/actions/runs/40870106997) passed at `f9eb3cdf3de07c0ae9f77b9b65106c9eeacac2db`. Its actual workspace run produced seven trials and nine detected mutants, including shared code detected by an API consumer test. Three members passed and one was explicitly unverified. Weak/broken/crash/cap/budget/cancel cases did not pass. [Original evidence and archive checksum](../examples/evidence/WORKSPACE-PROVENANCE.md).
+
+The first fixture checkpoint failed on behaviorally equivalent mutations caused by a redundant branch. The example was redesigned around a meaningful locked-resource permission defect; no mutation policy was relaxed and no survivor was waived.
+
+Release-candidate validation extends those gates with per-member zero/duplicate/missing tests, actual CLI → supervisor → workspace execution → paginated MCP evidence, workspace cancellation/restart, stale source/policy/image/payload HTTP checks, delayed browser plan responses and mobile scope/report agreement. Pure planning rejects unsupported topology/configuration/links before any container starts. Shared team authorization and isolation gates remain active. Windows checks include fresh extracted-source installation and build. See the release workflow result for the exact published commit.
+
+Observed locally for the release candidate: 75 TypeScript tests passed; nine demo browser checks and eight real CLI/MCP/workspace-browser checks passed. The 390px workspace view displays package outcomes without horizontal page overflow. Planning tests use explicit immutable image placeholders and execute no target code; they are separate from hosted real-container evidence.
+
+Local Docker Desktop was not started for this phase; actual container observations came from hosted Linux CI. The bundled checkpoint evidence retains its original alpha.2 tool marker and plan hash. It is not relabeled as an alpha.3 execution. No live user repository, paid API or independent security audit is claimed.
+
+Türkçe: Kontrollü npm workspace çalıştırması eklendi. Gerçek konteyner kanıtında tüketici testi ortak mutasyonu yakaladı. Eksik kapsam, başarısız/kararsız test veya kaçan mutasyon başarılı gösterilmez. Kayıtlı örneğin özgün sürüm/kimlikleri korunur; yayımlanan sürümün tam kontrol sonucu CI üzerinden değerlendirilmelidir.
 
 ## Alpha.2 workspace preflight — 2026-10-27
 

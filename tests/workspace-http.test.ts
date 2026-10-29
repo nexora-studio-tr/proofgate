@@ -37,7 +37,7 @@ test('registered workspace inspection preserves auth, tenant/token scope and rea
     expect(response.json().workspaceImpact).toMatchObject({
       status: 'complete',
       kind: 'npm-workspaces',
-      executionSupport: 'single-package-only',
+      executionSupport: 'reviewed-policy-required',
       candidateHash: response.json().candidateHash,
     });
     expect(response.json().changedFiles).toEqual(['packages/core/src/a.ts']);

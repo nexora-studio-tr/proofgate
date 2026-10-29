@@ -2,13 +2,13 @@
 
 [English](WORKSPACE-EXECUTION-RFC.md) · [Mevcut ön inceleme](WORKSPACE-IMPACT.md) · [Mevcut mimari](ARCHITECTURE.md)
 
-**Durum: öneri; ayrı mimari onayı bekliyor. Yürütme desteği uygulanmadı.** 29 Ekim 2026; incelenen yerel kaynak `197ae3a72c1a4739d39f0f0d01a8d1f793171449`, sürüm `0.1.0-alpha.2`. VoiceBridge model dönüştürmesi ertelendi; kalite düzeltmesi tamamlanmış sayılmıyor.
+**Durum: onaylandı; alpha.3 için uygulandı.** Mimari onayı 29 Ekim 2026 tarihinde alındı. [Kullanım](WORKSPACE-EXECUTION.tr.md) ve [gerçek konteyner kanıtı](../examples/evidence/WORKSPACE-PROVENANCE.md). İlk tasarım bağlamı: 29 Ekim 2026; incelenen yerel kaynak `197ae3a72c1a4739d39f0f0d01a8d1f793171449`, sürüm `0.1.0-alpha.2`. VoiceBridge model dönüştürmesi ertelendi; kalite düzeltmesi tamamlanmış sayılmıyor.
 
 ## Karar ve ürün sonucu
 
 Salt okunur workspace grafiğini sınırlı npm/Vitest monoreposu için açık doğrulama planına bağlamak. Hangi değişen paketlerin ve tüketicilerinin neden seçildiği, regresyon testinin eski kodda hatayı gösterip göstermediği ve tüketici testlerinin ortak kod mutasyonunu yakalayıp yakalamadığı görülecek. Bir paketin yeşil sonucu diğerindeki eksik kanıtı gizleyemeyecek.
 
-Mevcut `apps/server/src/service.ts` workspace yürütmesini engelliyor. `packages/runner/src/dependencies.ts`, workspace bildirimlerini ve bütün bağlantılı lock girişlerini reddediyor. Sandbox bağımlılık dizinlerini değişmez imaja bağlıyor; reporter testleri yalnızca tam adlarıyla tanıyor. Dört sınır birlikte ele alınmalı; yalnızca servis engelini kaldırmak özellik sayılmaz.
+Bu genişletmeden önce `apps/server/src/service.ts` workspace yürütmesini engelliyordu. `packages/runner/src/dependencies.ts`, workspace bildirimlerini ve bütün bağlantılı lock girişlerini reddediyor. Sandbox bağımlılık dizinlerini değişmez imaja bağlıyor; reporter testleri yalnızca tam adlarıyla tanıyor. Dört sınır birlikte ele alınmalı; yalnızca servis engelini kaldırmak özellik sayılmaz.
 
 ## İlk desteklenen profil
 
@@ -26,7 +26,7 @@ Mevcut `apps/server/src/service.ts` workspace yürütmesini engelliyor. `package
 
 pnpm/Yarn, browser/E2E, özel registry, lifecycle/build betikleri, adayın keyfî yapılandırması, otomatik düzeltme veya ürünler arası entegrasyon yok. Paket kaynakları incelenmiş Node test profiliyle build aşaması olmadan kullanılabilmeli. Haricî bağımlılıklar açık npm registry ve sabit bütünlük değerleriyle sınırlı. npm'nin ürettiği yerel bağlantılar yalnızca yakalanmış paket adı/yoluyla tam eşleşirse kabul edilir; keyfî `file:` veya kök dışı bağlantı olmaz. İlk bağımlılık düzeni kökte toplanmış bağımlılıklardır; paket başına ayrı haricî bağımlılık ağaçları desteklenmez.
 
-Workspace tanımı dizi biçiminde; kalıplar ön incelemenin desteklediği tam yol parçaları ve `*`/`**` ile sınırlı olur. İlk yürütme profili `workspace:` bağımlılık sözcüğünü reddeder; gerçek npm'nin ürettiği lock/bağlantı örnekleri ve olağan yerel sürüm başvuruları kullanılır. İnceleyicinin daha geniş ayrıştırması kurulum desteği değildir. npm sürümü değişmez runner imajından plana kaydedilir; hazırlama sırasında yükseltilmez. Bu kayıtlı projeye ait konteyner akışıdır, sınırsız düşmanca kod barındırma hizmeti değildir.
+Workspace tanımı dizi biçiminde; kalıplar ön incelemenin desteklediği tam yol parçaları ve `*`/`**` ile sınırlı olur. İlk yürütme profili `workspace:` bağımlılık sözcüğünü reddeder; gerçek npm'nin ürettiği lock/bağlantı örnekleri ve olağan yerel sürüm başvuruları kullanılır. İnceleyicinin daha geniş ayrıştırması kurulum desteği değildir. npm sürümü kanıta kaydedilir; değişmez runner imajı plana bağlanır; hazırlama sırasında yükseltilmez. Bu kayıtlı projeye ait konteyner akışıdır, sınırsız düşmanca kod barındırma hizmeti değildir.
 
 ## Sabit plan ve politika
 
@@ -71,7 +71,7 @@ Panel, mevcut Radix bileşenleriyle inceleme akışını genişletir: seçim ger
 
 Gerçek konteyner kabulü: güçlü düzeltme; C/H'de de geçen zayıf test; tüketicinin ortak mutasyonu yakalaması; sıfır/yinelenen/eksik test; silinmiş/döngülü/belirsiz topoloji; bildirim/lock/config değişimi; eski plan/politika/imaj; uygunsuz yerel bağlantı; import/setup çökmesi; mutasyon sınırı; süre/iptal; yeniden başlatma ve rol iptali; ekipler arası artifact reddi; tek kuyruk; CLI/MCP/panel kimlik eşleşmesi ve temiz kaynak Windows/Linux kontrolleri. Tek paketli mevcut kapılar ve sentetik kanıt korunur.
 
-Onaydan sonraki sıra: (1) v2 sözleşme/saf planlayıcı; (2) bağımlılık/bağlantı ve paketler arası mutasyon denemesi; (3) yedi deneme/ortak değerlendirme; (4) CLI/MCP/panel, belgeler ve kayıtlı salt okunur demo; (5) tam CI, temiz kurulum ve kapılar geçerse alpha.3. Eski alpha.2 varlıkları değişmez. Süre veya kalite garantisi verilmez. Bu RFC uygulama veya yeni yürütme kanıtı içermez.
+Onaydan sonraki sıra: (1) v2 sözleşme/saf planlayıcı; (2) bağımlılık/bağlantı ve paketler arası mutasyon denemesi; (3) yedi deneme/ortak değerlendirme; (4) CLI/MCP/panel, belgeler ve kayıtlı salt okunur demo; (5) tam CI, temiz kurulum ve kapılar geçerse alpha.3. Eski alpha.2 varlıkları değişmez. Süre veya kalite garantisi verilmez. Tasarım uygulandı; gözlenen sonuçlar ve sınırlar bağlantılı doğrulama belgelerindedir.
 
 ## Uyumluluk kaynakları
 

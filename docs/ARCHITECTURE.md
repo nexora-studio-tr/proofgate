@@ -1,5 +1,7 @@
 # ProofGate architecture
 
+Alpha.3 extends this original baseline with the approved [controlled workspace profile](WORKSPACE-EXECUTION-RFC.md). See the [operator guide](WORKSPACE-EXECUTION.md) for its narrower execution boundary and [recorded proof](../examples/evidence/WORKSPACE-PROVENANCE.md).
+
 Decision baseline: 2026-10-25. This document records the design; see [implementation and validation status](STATUS.md) for measured release behavior.
 
 ## 1. Product contract
