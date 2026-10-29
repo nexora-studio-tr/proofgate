@@ -24,7 +24,7 @@ export const budgetSchema = z
     mutants: z.number().int().min(1).max(25).default(25),
   })
   .strict();
-export const policySchema = z
+export const singlePolicySchema = z
   .object({
     schemaVersion: z.literal(1),
     testFiles: z.array(relativePath).min(1).max(30),
@@ -42,7 +42,76 @@ export const policySchema = z
     if (p.productionFiles.some((f) => p.testFiles.includes(f)))
       c.addIssue({ code: 'custom', message: 'Test/production overlap' });
   });
+export function workspaceTestId(member: string, file: string, name: string) {
+  return `${member}::${file}::${name}`;
+}
+export const workspacePolicySchema = z
+  .object({
+    schemaVersion: z.literal(2),
+    profile: z.literal('npm-workspace-node-v1'),
+    members: z
+      .array(
+        z
+          .object({
+            path: relativePath,
+            baselineTests: z.array(z.string().min(1).max(1000)).min(1).max(200),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(5),
+    testFiles: z.array(relativePath).min(1).max(30),
+    requiredTests: z.array(z.string().min(1).max(1000)).min(1).max(200),
+    regressionTest: z.string().min(1).max(1000),
+    expectedFailure: z.string().min(1).max(1000),
+    productionFiles: z.array(relativePath).min(1).max(30),
+    budget: budgetSchema,
+  })
+  .strict()
+  .superRefine((p, c) => {
+    const problem = (message: string) => c.addIssue({ code: 'custom', message });
+    const paths = p.members.map((m) => m.path);
+    if (new Set(paths).size !== paths.length) problem('Duplicate workspace member');
+    for (const files of [
+      p.testFiles,
+      p.productionFiles,
+      p.requiredTests,
+      ...p.members.map((m) => m.baselineTests),
+    ])
+      if (new Set(files).size !== files.length) problem('Duplicate policy entry');
+    for (const file of p.testFiles)
+      if (!/\.(test|spec)\.[cm]?[jt]s$/.test(file)) problem('Standalone tests required');
+    for (const file of [...p.testFiles, ...p.productionFiles])
+      if (!paths.some((root) => file.startsWith(root + '/')))
+        problem('File outside registered workspace members');
+    if (p.productionFiles.some((f) => p.testFiles.includes(f))) problem('Test/production overlap');
+    for (const id of [
+      ...p.requiredTests,
+      p.regressionTest,
+      ...p.members.flatMap((m) => m.baselineTests),
+    ]) {
+      const [member, file, ...names] = id.split('::');
+      if (
+        !member ||
+        !file ||
+        !names.join('::') ||
+        !paths.includes(member) ||
+        !p.testFiles.includes(file) ||
+        !file.startsWith(member + '/')
+      )
+        problem('Test identity must bind member, file and name');
+    }
+    if (!p.requiredTests.includes(p.regressionTest)) problem('Regression must be required');
+    for (const m of p.members) {
+      if (!p.requiredTests.some((id) => id.startsWith(m.path + '::')))
+        problem('Member has no required test');
+      if (m.baselineTests.some((id) => !id.startsWith(m.path + '::')))
+        problem('Baseline identity member mismatch');
+    }
+  });
+export const policySchema = z.union([singlePolicySchema, workspacePolicySchema]);
 export type Policy = z.infer<typeof policySchema>;
+export type WorkspacePolicy = z.infer<typeof workspacePolicySchema>;
 export type Verdict = 'pass' | 'fail' | 'inconclusive';
 export type State =
   'queued' | 'preparing' | 'running' | 'collecting' | 'completed' | 'canceled' | 'interrupted';
@@ -56,6 +125,9 @@ export interface TestObservation {
   status: 'passed' | 'failed' | 'skipped';
   message: string;
   assertion: boolean;
+  packagePath?: string | undefined;
+  file?: string | undefined;
+  fullName?: string | undefined;
 }
 export interface Trial {
   variant: 'B' | 'C' | 'H';
@@ -82,7 +154,7 @@ export interface Finding {
   file?: string;
 }
 export interface Evidence {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   toolVersion: string;
   runId: string;
   projectId: string;
@@ -109,6 +181,16 @@ export interface Evidence {
   elapsedMs: number;
   budget: z.infer<typeof budgetSchema>;
   simulated: boolean;
+  planHash?: string;
+  workspace?: {
+    profile: 'npm-workspace-node-v1';
+    impactHash: string;
+    selected: { path: string; name: string; reason: string; via: string[] }[];
+    unselected: string[];
+    links: { root: string; links: { name: string; target: string }[] }[];
+    npmVersion?: string;
+    members: { path: string; required: number; observed: number; status: Verdict }[];
+  };
 }
 export const verifyInput = z
   .object({

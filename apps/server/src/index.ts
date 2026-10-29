@@ -28,6 +28,8 @@ import { captureBase, captureWorking } from '../../../packages/snapshots/src/ind
 import { changedFiles, policyDigest } from '../../../packages/core/src/index.js';
 import { workspaceImpact } from '../../../packages/core/src/workspace.js';
 import { policySchema } from '../../../packages/contracts/src/index.js';
+import { dependencyKey } from '../../../packages/runner/src/dependencies.js';
+import { planDigest } from '../../../packages/core/src/workspace-plan.js';
 import { examplePair } from '../../../packages/core/src/examples.js';
 
 interface Options {
@@ -382,14 +384,15 @@ export async function createServer(options: Options) {
       const currentImage = store.get<{ image: string }>(
         'SELECT image FROM project_images WHERE project_id=? AND lock_hash=? AND base_image=?',
         project.id,
-        digest(p.head.files['package-lock.json'] ?? ''),
+        dependencyKey(p.head),
         p.baseImage ?? '',
       );
       stale =
         (await captureWorking(project.root, p.include)).hash !== p.head.hash ||
         policyDigest(policySchema.parse(JSON.parse(project.policy))) !== policyDigest(p.policy) ||
         store.meta('runner_image') !== p.baseImage ||
-        currentImage?.image !== p.image;
+        currentImage?.image !== p.image ||
+        p.planHash !== planDigest(p.base, p.head, p.policy, p.baseImage, p.image);
     } catch {}
     return { base: p.base.files[file] ?? '', head: p.head.files[file] ?? '', file, stale };
   });

@@ -52,6 +52,7 @@ jobs:
       - run: npm run test:docker -- --all
       - run: npm run test:isolation
       - run: npm run test:integration
+      - run: node scripts/validate-workspace-execution.mjs
       - run: docker build --file Dockerfile.web --tag proofgate-web:0.1.0 .
       - run: npm run test:deployment
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -64,6 +65,7 @@ jobs:
             artifacts/integration-validation/report.json
             artifacts/mcp-validation/report.json
             artifacts/deployment-validation/report.json
+            artifacts/workspace-execution/*.json
           retention-days: 7
   browser:
     runs-on: ubuntu-latest

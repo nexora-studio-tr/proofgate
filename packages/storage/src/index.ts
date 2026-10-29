@@ -262,6 +262,7 @@ export class Store {
       include: string[];
       baseImage: string;
       image: string;
+      planHash?: string;
     },
   ) {
     if (this.get<{ n: number }>('SELECT count(*) n FROM plans')!.n >= 20)

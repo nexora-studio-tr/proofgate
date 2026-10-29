@@ -1,0 +1,1 @@
+{"name":"@fixture/audit","version":"1.0.0","type":"module","exports":"./src/audit.ts","dependencies":{"@fixture/api":"1.0.0"}}
