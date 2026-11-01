@@ -38,7 +38,7 @@
     "test:workspace-execution": "node scripts/validate-workspace-execution.mjs"
   },
   "dependencies": {
-    "@fastify/cookie": "11.1.3",
+    "@fastify/cookie": "11.1.5",
     "@fastify/static": "10.1.7",
     "@modelcontextprotocol/server": "2.4.0",
     "fastify": "5.12.7",
